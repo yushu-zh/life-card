@@ -1,0 +1,596 @@
+{
+  "scoreBands": {
+    "failure": { "max": 6 },
+    "costlySuccess": { "min": 7, "max": 9 },
+    "success": { "min": 10, "max": 11 },
+    "criticalSuccess": { "min": 12 }
+  },
+  "events": [
+    {
+      "id": "achievement-advanced-study",
+      "name": "深造机会",
+      "category": "achievement",
+      "availability": {
+        "age": { "min": 20, "maxExclusive": 35 },
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["cognition", "execution"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "cognition", "amount": 1 },
+          { "key": "experience", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "money", "amount": -1 },
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "money", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "experience", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "achievement-job-opportunity",
+      "name": "工作机会",
+      "category": "achievement",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["cognition", "execution"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "money", "amount": 2 },
+          { "key": "experience", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "health", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "money", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "achievement-career-shift",
+      "name": "职业转型",
+      "category": "achievement",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["execution", "adaptability"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "experience", "amount": 1 },
+          { "key": "freedom", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "money", "amount": -1 },
+          { "key": "energy", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "money", "amount": 2 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "achievement-promotion",
+      "name": "晋升机会",
+      "category": "achievement",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["cognition", "social"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "money", "amount": 2 },
+          { "key": "influence", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "happiness", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "influence", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "achievement-startup",
+      "name": "创业机会",
+      "category": "achievement",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["social", "creativity"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "money", "amount": 2 },
+          { "key": "freedom", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "money", "amount": -2 },
+          { "key": "energy", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "influence", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "achievement-investment",
+      "name": "投资机会",
+      "category": "achievement",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["cognition", "adaptability"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "money", "amount": 3 }
+        ],
+        "fixedCost": [
+          { "key": "money", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "money", "amount": -2 }
+        ],
+        "criticalBonus": [
+          { "key": "money", "amount": 2 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "relationship-romance",
+      "name": "恋爱关系",
+      "category": "relationship",
+      "availability": {
+        "age": { "min": 20, "maxExclusive": 35 },
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["social"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "happiness", "amount": 1 },
+          { "key": "social", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "happiness", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "happiness", "amount": 1 }
+        ]
+      },
+      "onNonFailure": [
+        { "key": "romanceSuccessCount", "operation": "increment", "amount": 1 }
+      ]
+    },
+    {
+      "id": "relationship-marriage",
+      "name": "婚姻选择",
+      "category": "relationship",
+      "availability": {
+        "maxOccurrences": 1,
+        "requiresLifeNodes": [
+          { "key": "romanceSuccessCount", "min": 1 }
+        ]
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["social"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "happiness", "amount": 2 }
+        ],
+        "fixedCost": [
+          { "key": "freedom", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "money", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "happiness", "amount": 1 }
+        ]
+      },
+      "onNonFailure": [
+        { "key": "marriageEstablished", "operation": "set", "value": true }
+      ]
+    },
+    {
+      "id": "relationship-family",
+      "name": "组建家庭",
+      "category": "relationship",
+      "availability": {
+        "maxOccurrences": 1,
+        "requiresLifeNodes": [
+          { "key": "marriageEstablished", "equals": true }
+        ]
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["social"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "happiness", "amount": 2 }
+        ],
+        "fixedCost": [
+          { "key": "money", "amount": -1 },
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "freedom", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "happiness", "amount": 1 }
+        ]
+      },
+      "onNonFailure": [
+        { "key": "familyEstablished", "operation": "set", "value": true }
+      ]
+    },
+    {
+      "id": "relationship-home-car",
+      "name": "买房买车",
+      "category": "relationship",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["cognition"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "happiness", "amount": 1 },
+          { "key": "freedom", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "money", "amount": -2 }
+        ],
+        "risk": [
+          { "key": "money", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "happiness", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "relationship-friends",
+      "name": "结交朋友",
+      "category": "relationship",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["social"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "social", "amount": 1 },
+          { "key": "happiness", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "happiness", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "happiness", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "relationship-parents",
+      "name": "陪伴父母",
+      "category": "relationship",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["social"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "happiness", "amount": 2 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "happiness", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "happiness", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "relationship-children",
+      "name": "陪伴孩子",
+      "category": "relationship",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": [
+          { "key": "familyEstablished", "equals": true }
+        ]
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["social"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "happiness", "amount": 2 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "freedom", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "happiness", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "self-create-work",
+      "name": "创作作品",
+      "category": "self",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["execution", "creativity"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "influence", "amount": 2 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "influence", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "self-charity",
+      "name": "公益事业",
+      "category": "self",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["execution"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "influence", "amount": 1 },
+          { "key": "happiness", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "influence", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "self-hobby",
+      "name": "培养兴趣",
+      "category": "self",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["creativity", "execution"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "freedom", "amount": 1 },
+          { "key": "happiness", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "money", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "freedom", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "self-travel",
+      "name": "全球旅行",
+      "category": "self",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["execution", "adaptability"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "freedom", "amount": 2 },
+          { "key": "experience", "amount": 2 }
+        ],
+        "fixedCost": [
+          { "key": "money", "amount": -2 }
+        ],
+        "risk": [
+          { "key": "money", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "experience", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "self-fitness",
+      "name": "健身锻炼",
+      "category": "self",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["execution"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "health", "amount": 2 },
+          { "key": "energy", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "health", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "self-discovery",
+      "name": "自我探索",
+      "category": "self",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "sum",
+        "abilityKeys": ["cognition"]
+      },
+      "effects": {
+        "reward": [
+          { "key": "freedom", "amount": 1 },
+          { "key": "cognition", "amount": 1 }
+        ],
+        "fixedCost": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [
+          { "key": "energy", "amount": -1 }
+        ],
+        "criticalBonus": [
+          { "key": "experience", "amount": 1 }
+        ]
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "self-rest",
+      "name": "休养身心",
+      "category": "self",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "none",
+        "abilityKeys": []
+      },
+      "effects": {
+        "reward": [
+          { "key": "energy", "amount": 2 },
+          { "key": "health", "amount": 1 }
+        ],
+        "fixedCost": [],
+        "risk": [],
+        "criticalBonus": []
+      },
+      "onNonFailure": []
+    }
+  ]
+}

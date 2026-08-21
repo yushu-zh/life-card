@@ -1,6 +1,7 @@
 import type { InitialStateConfig } from '../../shared/types/bootstrap.ts';
 import { isNonNegativeInteger } from "../../shared/utils/validation.ts";
 
+// 这些字段是初始配置里一定要有的。
 const REQUIRED_FIELDS = [
   'abilityPointTotal',
   'abilityMax',
@@ -9,6 +10,7 @@ const REQUIRED_FIELDS = [
   'wishLimit'
 ] as const;
 
+// 这些字段是初始资源和结算指标。
 const RESOURCE_FIELDS = [
   'money',
   'energy',
@@ -19,6 +21,7 @@ const RESOURCE_FIELDS = [
   'influence'
 ] as const;
 
+// 检查 Phase 0 的初始配置是否合法，并整理成固定结构返回。
 export function validateInitialStateConfig(value: unknown): InitialStateConfig {
   if (!value || typeof value !== 'object') {
     throw new Error('Initial state config must be an object');

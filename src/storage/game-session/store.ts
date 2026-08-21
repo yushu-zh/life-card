@@ -31,14 +31,19 @@ type IndexedDBLike = {
   };
 };
 
+// IndexedDB 数据库名保持稳定，避免后续读档时落到不同库。
 const DATABASE_NAME = 'life-simulator';
+// 当前本地存档结构版本；只有真正需要迁移时才应递增。
 const DATABASE_VERSION = 1;
+// 游戏存档统一落在这个对象仓库里。
 const STORE_NAME = 'game-sessions';
 
+// 创建游戏存档的读写对象。
 export function createGameSessionStore(options?: { indexedDB?: IndexedDBLike }) {
   const indexedDBLike = options?.indexedDB ?? getGlobalIndexedDB();
 
   return {
+    // 把一份最新快照保存到 IndexedDB。
     async saveGameSession(snapshot: GameSessionSnapshot): Promise<void> {
       const database = await openDatabase(indexedDBLike);
       const persisted: PersistedGameSession = {
@@ -59,6 +64,7 @@ export function createGameSessionStore(options?: { indexedDB?: IndexedDBLike }) 
       }
     },
 
+    // 按 sessionId 读取一份已经保存的快照。
     async getGameSession(sessionId: string): Promise<PersistedGameSession | null> {
       const database = await openDatabase(indexedDBLike);
 
@@ -76,6 +82,7 @@ export function createGameSessionStore(options?: { indexedDB?: IndexedDBLike }) 
   };
 }
 
+// 从当前运行环境里拿到 IndexedDB 对象。
 function getGlobalIndexedDB(): IndexedDBLike {
   const candidate = globalThis.indexedDB as IndexedDBLike | undefined;
 
@@ -86,6 +93,7 @@ function getGlobalIndexedDB(): IndexedDBLike {
   return candidate;
 }
 
+// 打开数据库；如果是第一次打开，就顺手把存档表建好。
 async function openDatabase(indexedDBLike: IndexedDBLike) {
   const request = indexedDBLike.open(DATABASE_NAME, DATABASE_VERSION);
 
@@ -100,6 +108,7 @@ async function openDatabase(indexedDBLike: IndexedDBLike) {
   return waitForRequest(request);
 }
 
+// 把 IndexedDB 的 request 包成 Promise，方便在 async/await 里使用。
 function waitForRequest<TResult>(request: {
   result: TResult;
   error: Error | null;

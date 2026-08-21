@@ -1,5 +1,7 @@
 import type { CreatePlayerInput } from './bootstrap.ts';
+import type { LifeHistoryEntry } from './opportunity.ts';
 
+// 表示当前这一局游戏的完整状态。
 export interface GameSessionSnapshot {
   meta: {
     sessionId: string;
@@ -29,7 +31,7 @@ export interface GameSessionSnapshot {
     selectedEventIds: string[];
     discardedEventIds: string[];
     triggeredStateIds: string[];
-    lifeHistory: Array<Record<string, unknown>>;
+    lifeHistory: LifeHistoryEntry[];
     categoryPickCounts: {
       achievement: number;
       relationship: number;
@@ -48,6 +50,7 @@ export interface GameSessionSnapshot {
   };
 }
 
+// 表示真正存到 IndexedDB 里的存档结构。
 export interface PersistedGameSession {
   sessionId: string;
   schemaVersion: number;

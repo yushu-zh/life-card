@@ -3,6 +3,9 @@ import type { CreatePlayerInput, InitialStateConfig } from '../../shared/types/b
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import { validateCreatePlayerInput } from './validateCreatePlayerInput.ts';
 
+// 根据玩家输入和初始配置，生成一份完整的初始快照。
+// 初始快照是后续所有 Phase 的唯一运行态来源，
+// 因此这里一次性把必需字段全部写全，而不是依赖后续默认值补齐。
 export function createInitialSnapshot(
   input: CreatePlayerInput,
   config: InitialStateConfig,

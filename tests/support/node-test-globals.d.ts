@@ -4,6 +4,7 @@ declare module 'node:assert/strict' {
     equal(actual: unknown, expected: unknown, message?: string): void;
     doesNotThrow(block: () => unknown, message?: string): void;
     throws(block: () => unknown, error?: Error | RegExp): void;
+    rejects(block: () => Promise<unknown>, error?: Error | RegExp): Promise<void>;
   };
 
   export default assert;
