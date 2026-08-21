@@ -44,6 +44,9 @@ export function createInitialSnapshot(
       cycle: INITIAL_CYCLE,
       turn: INITIAL_TURN
     },
+    turnState: {
+      activeTurn: null
+    },
     records: {
       selectedEventIds: [],
       discardedEventIds: [],

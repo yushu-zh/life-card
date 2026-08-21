@@ -3,7 +3,6 @@ import type {
   AppliedLifeNodeChange,
   LifeNodeMutation,
   OpportunityEventDefinition,
-  OpportunityResolutionHistoryEntry,
   OpportunityResolutionSummary,
   OpportunityResultGrade,
   StatDelta
@@ -59,22 +58,6 @@ export function applyOpportunityResolution(
     resultGrade !== 'failure'
       ? applyLifeNodeMutations(updatedSnapshot, eventDefinition.onNonFailure ?? [])
       : [];
-
-  const historyEntry: OpportunityResolutionHistoryEntry = {
-    type: 'opportunity-resolution',
-    event: summaryBase.event,
-    resolutionKind: summaryBase.resolutionKind,
-    formula: summaryBase.formula,
-    resultGrade,
-    appliedDeltas,
-    lifeNodeChanges,
-    snapshotAfter: {
-      stats: structuredClone(updatedSnapshot.stats),
-      lifeNodes: structuredClone(updatedSnapshot.records.lifeNodes)
-    }
-  };
-
-  updatedSnapshot.records.lifeHistory.push(historyEntry);
 
   return {
     ...summaryBase,

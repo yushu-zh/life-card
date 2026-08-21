@@ -1,0 +1,75 @@
+{
+  "cycleStartAges": [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
+  "endAgeExclusive": 80,
+  "redrawLimitPerTurn": 1,
+  "categoryTieBreakOrder": ["achievement", "relationship", "self"],
+  "stageRules": [
+    {
+      "minAge": 20,
+      "maxExclusive": 35,
+      "turnsPerCycle": 3,
+      "turnRules": ["balanced", "balanced", "balanced"]
+    },
+    {
+      "minAge": 35,
+      "maxExclusive": 50,
+      "turnsPerCycle": 2,
+      "turnRules": ["balanced", "weighted-by-pick-counts"]
+    },
+    {
+      "minAge": 50,
+      "maxExclusive": 80,
+      "turnsPerCycle": 1,
+      "turnRules": ["weighted-by-pick-counts"]
+    }
+  ],
+  "fate": {
+    "triggerProbability": 0.03,
+    "adaptabilityMitigationPerPoint": 0.2,
+    "events": [
+      {
+        "id": "fate-industry-downturn",
+        "name": "行业衰退",
+        "effects": [
+          { "key": "money", "amount": -2 },
+          { "key": "energy", "amount": -1 }
+        ]
+      },
+      {
+        "id": "fate-family-illness",
+        "name": "家人生病",
+        "effects": [
+          { "key": "money", "amount": -1 },
+          { "key": "energy", "amount": -1 },
+          { "key": "happiness", "amount": -1 }
+        ]
+      },
+      {
+        "id": "fate-major-mistake",
+        "name": "重大失误",
+        "effects": [
+          { "key": "money", "amount": -2 },
+          { "key": "influence", "amount": -1 }
+        ]
+      },
+      {
+        "id": "fate-layoff",
+        "name": "公司裁员",
+        "effects": [
+          { "key": "money", "amount": -2 },
+          { "key": "happiness", "amount": -1 },
+          { "key": "freedom", "amount": 1 }
+        ]
+      },
+      {
+        "id": "fate-lucky-break",
+        "name": "意外机会",
+        "effects": [
+          { "key": "money", "amount": 3 },
+          { "key": "influence", "amount": 1 },
+          { "key": "experience", "amount": 1 }
+        ]
+      }
+    ]
+  }
+}

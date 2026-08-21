@@ -107,7 +107,7 @@ describe('createInitialSnapshot', () => {
     assert.deepEqual(snapshot, {
       meta: {
         sessionId: 'session-1',
-        schemaVersion: 1
+        schemaVersion: 2
       },
       player: {
         nickname: '小宇',
@@ -140,6 +140,9 @@ describe('createInitialSnapshot', () => {
         age: 20,
         cycle: 1,
         turn: 1
+      },
+      turnState: {
+        activeTurn: null
       },
       records: {
         selectedEventIds: [],

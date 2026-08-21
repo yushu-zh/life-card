@@ -34,7 +34,7 @@ describe('game session store', () => {
 
     assert.deepEqual(await store.getGameSession('session-2'), {
       sessionId: 'session-2',
-      schemaVersion: 1,
+      schemaVersion: 2,
       snapshot
     });
   });

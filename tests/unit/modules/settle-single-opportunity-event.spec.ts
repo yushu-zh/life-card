@@ -49,7 +49,7 @@ describe('settleSingleOpportunityEvent', () => {
     const persisted = await store.getGameSession('session-turn-1');
 
     assert.deepEqual(persisted?.snapshot, summary.updatedSnapshot);
-    assert.equal(persisted?.snapshot.records.lifeHistory.length, 1);
+    assert.equal(persisted?.snapshot.records.lifeHistory.length, 0);
     assert.equal(persisted?.snapshot.records.selectedEventIds[0], 'achievement-startup');
   });
 

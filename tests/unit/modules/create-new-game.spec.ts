@@ -38,7 +38,7 @@ describe('createNewGame', () => {
     assert.deepEqual(snapshot.records.selectedEventIds, []);
     assert.deepEqual(await store.getGameSession('session-3'), {
       sessionId: 'session-3',
-      schemaVersion: 1,
+      schemaVersion: 2,
       snapshot
     });
   });

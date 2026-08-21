@@ -1,5 +1,5 @@
 import type { CreatePlayerInput } from './bootstrap.ts';
-import type { LifeHistoryEntry } from './opportunity.ts';
+import type { ActiveTurnState, TurnHistoryEntry } from './turn.ts';
 
 // 表示当前这一局游戏的完整状态。
 export interface GameSessionSnapshot {
@@ -23,15 +23,19 @@ export interface GameSessionSnapshot {
     };
   };
   progression: {
-    age: 20;
+    age: number;
     cycle: number;
     turn: number;
+  };
+  turnState: {
+    activeTurn: ActiveTurnState | null;
   };
   records: {
     selectedEventIds: string[];
     discardedEventIds: string[];
     triggeredStateIds: string[];
-    lifeHistory: LifeHistoryEntry[];
+    // lifeHistory 现在只保留长期要消费的整回合历史，避免混入不同统计粒度的记录。
+    lifeHistory: TurnHistoryEntry[];
     categoryPickCounts: {
       achievement: number;
       relationship: number;

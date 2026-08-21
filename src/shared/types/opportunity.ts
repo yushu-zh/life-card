@@ -135,21 +135,3 @@ export interface OpportunityResolutionSummary {
   lifeNodeChanges: AppliedLifeNodeChange[];
   updatedSnapshot: GameSessionSnapshot;
 }
-
-// 一条写进 lifeHistory 的事件结算记录。
-export interface OpportunityResolutionHistoryEntry {
-  type: 'opportunity-resolution';
-  event: OpportunityResolutionSummary['event'];
-  resolutionKind: OpportunityResolutionSummary['resolutionKind'];
-  formula: OpportunityResolutionSummary['formula'];
-  resultGrade: OpportunityResolutionSummary['resultGrade'];
-  appliedDeltas: OpportunityResolutionSummary['appliedDeltas'];
-  lifeNodeChanges: OpportunityResolutionSummary['lifeNodeChanges'];
-  snapshotAfter: {
-    stats: GameSessionSnapshot['stats'];
-    lifeNodes: GameSessionSnapshot['records']['lifeNodes'];
-  };
-}
-
-// 当前 lifeHistory 里允许出现的记录类型。
-export type LifeHistoryEntry = OpportunityResolutionHistoryEntry;
