@@ -71,5 +71,58 @@
         ]
       }
     ]
+  },
+  "statuses": {
+    "economicCrisis": {
+      "id": "economic-crisis",
+      "name": "经济危机",
+      "resolutionMode": "once-per-game",
+      "moneyMax": 2,
+      "effects": [
+        { "key": "happiness", "amount": -1 },
+        { "key": "freedom", "amount": -1 }
+      ]
+    },
+    "professionalAchievement": {
+      "id": "professional-achievement",
+      "name": "专业成就",
+      "resolutionMode": "once-per-game",
+      "cognitionMin": 5,
+      "effects": [
+        { "key": "influence", "amount": 1 }
+      ]
+    },
+    "socialStatus": {
+      "id": "social-status",
+      "name": "社会地位",
+      "resolutionMode": "once-per-game",
+      "influenceMin": 5,
+      "effects": [
+        { "key": "money", "amount": 1 }
+      ]
+    },
+    "healthCrisis": {
+      "id": "health-crisis",
+      "name": "健康危机",
+      "resolutionMode": "per-turn-risk-check",
+      "healthMax": -1,
+      "probabilityPerNegativePoint": 0.01
+    },
+    "energyCrisis": {
+      "id": "energy-crisis",
+      "name": "精力危机",
+      "resolutionMode": "per-turn-risk-check",
+      "energyMax": -1,
+      "probabilityPerNegativePoint": 0.01
+    },
+    "lifeCrisis": {
+      "id": "life-crisis",
+      "name": "生命危机",
+      "resolutionMode": "per-turn-risk-check",
+      "ageMin": 50,
+      "healthMax": -3,
+      "energyMax": -2,
+      "deathProbability": 0.05
+    }
   }
 }

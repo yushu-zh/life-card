@@ -16,6 +16,9 @@ describe('loadTurnSystemConfig', () => {
     assert.equal(config.stageRules[1].turnRules[1], 'weighted-by-pick-counts');
     assert.equal(config.fate.triggerProbability, 0.03);
     assert.equal(config.fate.events.length, 5);
+    assert.equal(config.statuses.economicCrisis.id, 'economic-crisis');
+    assert.equal(config.statuses.healthCrisis.probabilityPerNegativePoint, 0.01);
+    assert.equal(config.statuses.lifeCrisis.deathProbability, 0.05);
   });
 });
 
@@ -46,6 +49,52 @@ describe('validateTurnSystemConfig', () => {
                 effects: [{ key: 'money', amount: -1 }]
               }
             ]
+          },
+          statuses: {
+            economicCrisis: {
+              id: 'economic-crisis',
+              name: '经济危机',
+              resolutionMode: 'once-per-game',
+              moneyMax: 2,
+              effects: [{ key: 'happiness', amount: -1 }]
+            },
+            professionalAchievement: {
+              id: 'professional-achievement',
+              name: '专业成就',
+              resolutionMode: 'once-per-game',
+              cognitionMin: 5,
+              effects: [{ key: 'influence', amount: 1 }]
+            },
+            socialStatus: {
+              id: 'social-status',
+              name: '社会地位',
+              resolutionMode: 'once-per-game',
+              influenceMin: 5,
+              effects: [{ key: 'money', amount: 1 }]
+            },
+            healthCrisis: {
+              id: 'health-crisis',
+              name: '健康危机',
+              resolutionMode: 'per-turn-risk-check',
+              healthMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            energyCrisis: {
+              id: 'energy-crisis',
+              name: '精力危机',
+              resolutionMode: 'per-turn-risk-check',
+              energyMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            lifeCrisis: {
+              id: 'life-crisis',
+              name: '生命危机',
+              resolutionMode: 'per-turn-risk-check',
+              ageMin: 50,
+              healthMax: -3,
+              energyMax: -2,
+              deathProbability: 0.05
+            }
           }
         }),
       new Error('Turn system stage rule at index 0 turnRules length must match turnsPerCycle')
@@ -84,6 +133,52 @@ describe('validateTurnSystemConfig', () => {
                 effects: [{ key: 'money', amount: -1 }]
               }
             ]
+          },
+          statuses: {
+            economicCrisis: {
+              id: 'economic-crisis',
+              name: '经济危机',
+              resolutionMode: 'once-per-game',
+              moneyMax: 2,
+              effects: [{ key: 'happiness', amount: -1 }]
+            },
+            professionalAchievement: {
+              id: 'professional-achievement',
+              name: '专业成就',
+              resolutionMode: 'once-per-game',
+              cognitionMin: 5,
+              effects: [{ key: 'influence', amount: 1 }]
+            },
+            socialStatus: {
+              id: 'social-status',
+              name: '社会地位',
+              resolutionMode: 'once-per-game',
+              influenceMin: 5,
+              effects: [{ key: 'money', amount: 1 }]
+            },
+            healthCrisis: {
+              id: 'health-crisis',
+              name: '健康危机',
+              resolutionMode: 'per-turn-risk-check',
+              healthMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            energyCrisis: {
+              id: 'energy-crisis',
+              name: '精力危机',
+              resolutionMode: 'per-turn-risk-check',
+              energyMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            lifeCrisis: {
+              id: 'life-crisis',
+              name: '生命危机',
+              resolutionMode: 'per-turn-risk-check',
+              ageMin: 50,
+              healthMax: -3,
+              energyMax: -2,
+              deathProbability: 0.05
+            }
           }
         }),
       new Error('Turn system stage rules must be continuous and non-overlapping')
@@ -110,9 +205,211 @@ describe('validateTurnSystemConfig', () => {
             triggerProbability: 0.03,
             adaptabilityMitigationPerPoint: 0.2,
             events: []
+          },
+          statuses: {
+            economicCrisis: {
+              id: 'economic-crisis',
+              name: '经济危机',
+              resolutionMode: 'once-per-game',
+              moneyMax: 2,
+              effects: [{ key: 'happiness', amount: -1 }]
+            },
+            professionalAchievement: {
+              id: 'professional-achievement',
+              name: '专业成就',
+              resolutionMode: 'once-per-game',
+              cognitionMin: 5,
+              effects: [{ key: 'influence', amount: 1 }]
+            },
+            socialStatus: {
+              id: 'social-status',
+              name: '社会地位',
+              resolutionMode: 'once-per-game',
+              influenceMin: 5,
+              effects: [{ key: 'money', amount: 1 }]
+            },
+            healthCrisis: {
+              id: 'health-crisis',
+              name: '健康危机',
+              resolutionMode: 'per-turn-risk-check',
+              healthMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            energyCrisis: {
+              id: 'energy-crisis',
+              name: '精力危机',
+              resolutionMode: 'per-turn-risk-check',
+              energyMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            lifeCrisis: {
+              id: 'life-crisis',
+              name: '生命危机',
+              resolutionMode: 'per-turn-risk-check',
+              ageMin: 50,
+              healthMax: -3,
+              energyMax: -2,
+              deathProbability: 0.05
+            }
           }
         }),
       new Error('Turn system fate field events must not be empty')
+    );
+  });
+
+  it('throws when status ids are duplicated', () => {
+    assert.throws(
+      () =>
+        validateTurnSystemConfig({
+          cycleStartAges: [20],
+          endAgeExclusive: 25,
+          redrawLimitPerTurn: 1,
+          categoryTieBreakOrder: ['achievement', 'relationship', 'self'],
+          stageRules: [
+            {
+              minAge: 20,
+              maxExclusive: 25,
+              turnsPerCycle: 1,
+              turnRules: ['balanced']
+            }
+          ],
+          fate: {
+            triggerProbability: 0.03,
+            adaptabilityMitigationPerPoint: 0.2,
+            events: [
+              {
+                id: 'fate-1',
+                name: '命运1',
+                effects: [{ key: 'money', amount: -1 }]
+              }
+            ]
+          },
+          statuses: {
+            economicCrisis: {
+              id: 'duplicated-status',
+              name: '经济危机',
+              resolutionMode: 'once-per-game',
+              moneyMax: 2,
+              effects: [{ key: 'happiness', amount: -1 }]
+            },
+            professionalAchievement: {
+              id: 'duplicated-status',
+              name: '专业成就',
+              resolutionMode: 'once-per-game',
+              cognitionMin: 5,
+              effects: [{ key: 'influence', amount: 1 }]
+            },
+            socialStatus: {
+              id: 'social-status',
+              name: '社会地位',
+              resolutionMode: 'once-per-game',
+              influenceMin: 5,
+              effects: [{ key: 'money', amount: 1 }]
+            },
+            healthCrisis: {
+              id: 'health-crisis',
+              name: '健康危机',
+              resolutionMode: 'per-turn-risk-check',
+              healthMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            energyCrisis: {
+              id: 'energy-crisis',
+              name: '精力危机',
+              resolutionMode: 'per-turn-risk-check',
+              energyMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            lifeCrisis: {
+              id: 'life-crisis',
+              name: '生命危机',
+              resolutionMode: 'per-turn-risk-check',
+              ageMin: 50,
+              healthMax: -3,
+              energyMax: -2,
+              deathProbability: 0.05
+            }
+          }
+        }),
+      new Error('Turn system status ids must be unique: duplicated-status')
+    );
+  });
+
+  it('throws when a status probability is outside the valid range', () => {
+    assert.throws(
+      () =>
+        validateTurnSystemConfig({
+          cycleStartAges: [20],
+          endAgeExclusive: 25,
+          redrawLimitPerTurn: 1,
+          categoryTieBreakOrder: ['achievement', 'relationship', 'self'],
+          stageRules: [
+            {
+              minAge: 20,
+              maxExclusive: 25,
+              turnsPerCycle: 1,
+              turnRules: ['balanced']
+            }
+          ],
+          fate: {
+            triggerProbability: 0.03,
+            adaptabilityMitigationPerPoint: 0.2,
+            events: [
+              {
+                id: 'fate-1',
+                name: '命运1',
+                effects: [{ key: 'money', amount: -1 }]
+              }
+            ]
+          },
+          statuses: {
+            economicCrisis: {
+              id: 'economic-crisis',
+              name: '经济危机',
+              resolutionMode: 'once-per-game',
+              moneyMax: 2,
+              effects: [{ key: 'happiness', amount: -1 }]
+            },
+            professionalAchievement: {
+              id: 'professional-achievement',
+              name: '专业成就',
+              resolutionMode: 'once-per-game',
+              cognitionMin: 5,
+              effects: [{ key: 'influence', amount: 1 }]
+            },
+            socialStatus: {
+              id: 'social-status',
+              name: '社会地位',
+              resolutionMode: 'once-per-game',
+              influenceMin: 5,
+              effects: [{ key: 'money', amount: 1 }]
+            },
+            healthCrisis: {
+              id: 'health-crisis',
+              name: '健康危机',
+              resolutionMode: 'per-turn-risk-check',
+              healthMax: -1,
+              probabilityPerNegativePoint: 2
+            },
+            energyCrisis: {
+              id: 'energy-crisis',
+              name: '精力危机',
+              resolutionMode: 'per-turn-risk-check',
+              energyMax: -1,
+              probabilityPerNegativePoint: 0.01
+            },
+            lifeCrisis: {
+              id: 'life-crisis',
+              name: '生命危机',
+              resolutionMode: 'per-turn-risk-check',
+              ageMin: 50,
+              healthMax: -3,
+              energyMax: -2,
+              deathProbability: 0.05
+            }
+          }
+        }),
+      new Error('Turn system statuses field healthCrisis probabilityPerNegativePoint must be between 0 and 1')
     );
   });
 });

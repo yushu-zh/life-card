@@ -1,11 +1,12 @@
 import type { GameSessionSnapshot } from './game-session.ts';
 import type { FateConfig, FateResolutionSummary } from './fate.ts';
 import type { OpportunityCategory, OpportunityResolutionSummary } from './opportunity.ts';
+import type { StatusResult, StatusSystemConfig } from './status.ts';
 
 export type TurnPatternKind = 'balanced' | 'weighted-by-pick-counts';
 export type TurnRuleName = TurnPatternKind;
 export type TurnOfferSlotIndex = 0 | 1 | 2;
-export type TurnStatusResult = Record<string, unknown>;
+export type TurnStatusResult = StatusResult;
 
 export interface TurnOfferCard {
   slotIndex: TurnOfferSlotIndex;
@@ -39,6 +40,7 @@ export interface TurnSystemConfig {
   categoryTieBreakOrder: OpportunityCategory[];
   stageRules: TurnStageRule[];
   fate: FateConfig;
+  statuses: StatusSystemConfig;
 }
 
 export interface TurnCategoryPlan {

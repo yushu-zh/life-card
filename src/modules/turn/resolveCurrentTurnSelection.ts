@@ -4,9 +4,11 @@ import { resolveFateEvent } from '../../engine/fate/resolveFateEvent.ts';
 import { buildTurnHistoryEntry } from '../../engine/history/buildTurnHistoryEntry.ts';
 import { settleOpportunityEvent } from '../../engine/opportunity/settleOpportunityEvent.ts';
 import { advanceTurnProgression } from '../../engine/progression/advanceTurnProgression.ts';
+import { resolveTurnStatuses } from '../../engine/status/resolveTurnStatuses.ts';
 import { createGameSessionStore } from '../../storage/game-session/store.ts';
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { Dice2D6 } from '../../shared/types/opportunity.ts';
+import type { StatusSystemConfig } from '../../shared/types/status.ts';
 import type { ResolveTurnStatusesResult, TurnOfferCard, TurnResolutionSummary } from '../../shared/types/turn.ts';
 
 // 选择当前牌组中的一张牌，并把整回合结算到最终可持久化状态。
@@ -19,7 +21,11 @@ export async function resolveCurrentTurnSelection(
     store?: ReturnType<typeof createGameSessionStore>;
     random?: () => number;
     rollDice?: () => Dice2D6;
-    resolveStatuses?: (snapshot: GameSessionSnapshot) => ResolveTurnStatusesResult;
+    resolveStatuses?: (
+      snapshot: GameSessionSnapshot,
+      config: StatusSystemConfig,
+      options?: { random?: () => number }
+    ) => ResolveTurnStatusesResult;
   }
 ): Promise<TurnResolutionSummary> {
   const turnSystemConfig = loadTurnSystemConfig();
@@ -65,7 +71,13 @@ export async function resolveCurrentTurnSelection(
   const fateSummary = resolveFateEvent(opportunitySummary.updatedSnapshot, turnSystemConfig.fate, {
     random: options?.random
   });
-  const statusResult = (options?.resolveStatuses ?? defaultResolveStatuses)(fateSummary.updatedSnapshot);
+  const statusResult = (options?.resolveStatuses ?? defaultResolveStatuses)(
+    fateSummary.updatedSnapshot,
+    turnSystemConfig.statuses,
+    {
+      random: options?.random
+    }
+  );
   const discardedCards = buildDiscardedCards(activeTurn, selectedCard);
   const updatedSnapshot = structuredClone(statusResult.updatedSnapshot);
 
@@ -137,13 +149,14 @@ function buildDiscardedCards(activeTurn: GameSessionSnapshot['turnState']['activ
   return [...rerolledAwayCards.map((card) => ({ ...card })), ...unselectedCurrentCards.map((card) => ({ ...card }))];
 }
 
-function defaultResolveStatuses(snapshot: GameSessionSnapshot): ResolveTurnStatusesResult {
-  return {
-    updatedSnapshot: structuredClone(snapshot),
-    results: [],
-    ended: false,
-    endReason: null
-  };
+function defaultResolveStatuses(
+  snapshot: GameSessionSnapshot,
+  config: StatusSystemConfig,
+  options?: {
+    random?: () => number;
+  }
+): ResolveTurnStatusesResult {
+  return resolveTurnStatuses(snapshot, config, options);
 }
 
 function createRollDice(random?: () => number): () => Dice2D6 {

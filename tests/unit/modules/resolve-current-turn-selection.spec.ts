@@ -113,25 +113,40 @@ describe('resolveCurrentTurnSelection', () => {
         resolveStatuses: (snapshot) => {
           const updatedSnapshot = structuredClone(snapshot);
           updatedSnapshot.lifecycle.isEnded = true;
-          updatedSnapshot.lifecycle.endReason = 'status-death';
+          updatedSnapshot.lifecycle.endReason = 'status-health-crisis';
 
           return {
             updatedSnapshot,
             results: [
               {
-                type: 'status-result',
-                source: 'test-status'
+                id: 'health-crisis',
+                name: '健康危机',
+                kind: 'death-risk',
+                resolutionMode: 'per-turn-risk-check',
+                firstTrigger: false,
+                conditions: [
+                  {
+                    key: 'health',
+                    operator: '<=',
+                    threshold: -1,
+                    actual: -2
+                  }
+                ],
+                deathProbability: 0.02,
+                roll: 0.01,
+                died: true,
+                endReason: 'status-health-crisis'
               }
             ],
             ended: true,
-            endReason: 'status-death'
+            endReason: 'status-health-crisis'
           };
         }
       }
     );
 
     assert.equal(summary.progressionAfterTurn.isEnded, true);
-    assert.equal(summary.progressionAfterTurn.endReason, 'status-death');
+    assert.equal(summary.progressionAfterTurn.endReason, 'status-health-crisis');
     assert.equal(summary.updatedSnapshot.progression.turn, 1);
     assert.deepEqual(
       summary.discardedCards.map((card) => card.eventId),
@@ -142,5 +157,57 @@ describe('resolveCurrentTurnSelection', () => {
       ]
     );
     assert.equal(summary.statuses.length, 1);
+  });
+
+  it('runs the built-in status engine by default and writes status results into turn history', async () => {
+    const store = createGameSessionStore({ indexedDB: createInMemoryIndexedDB() });
+
+    await createNewGame(baseInput, {
+      sessionId: 'session-resolve-3',
+      store
+    });
+
+    const persistedBeforeOffer = await store.getGameSession('session-resolve-3');
+
+    if (!persistedBeforeOffer) {
+      throw new Error('Expected persisted session before creating turn offer');
+    }
+
+    persistedBeforeOffer.snapshot.stats.resources.money = 2;
+    await store.saveGameSession(persistedBeforeOffer.snapshot);
+
+    await getOrCreateCurrentTurnOffer(
+      {
+        sessionId: 'session-resolve-3'
+      },
+      {
+        store,
+        random: () => 0
+      }
+    );
+
+    const summary = await resolveCurrentTurnSelection(
+      {
+        sessionId: 'session-resolve-3',
+        slotIndex: 0
+      },
+      {
+        store,
+        random: () => 0.9,
+        rollDice: () => ({ first: 2, second: 3 })
+      }
+    );
+
+    assert.deepEqual(summary.statuses.map((status) => status.id), ['economic-crisis']);
+    assert.equal(summary.updatedSnapshot.records.triggeredStateIds.includes('economic-crisis'), true);
+    assert.equal(summary.updatedSnapshot.records.lifeHistory.at(-1)?.type, 'turn-resolution');
+
+    const turnHistory = summary.updatedSnapshot.records.lifeHistory.at(-1);
+
+    if (!turnHistory || turnHistory.type !== 'turn-resolution') {
+      throw new Error('Expected the latest life history entry to be a turn-resolution record');
+    }
+
+    assert.deepEqual(turnHistory.statuses, summary.statuses);
   });
 });

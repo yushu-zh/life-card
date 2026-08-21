@@ -1,7 +1,19 @@
 import type { FateConfig, FateEventDefinition } from '../../shared/types/fate.ts';
 import type { OpportunityCategory, StatDelta, StatKey } from '../../shared/types/opportunity.ts';
+import type {
+  EconomicCrisisConfig,
+  EnergyCrisisConfig,
+  HealthCrisisConfig,
+  LifeCrisisConfig,
+  ProfessionalAchievementConfig,
+  SocialStatusConfig,
+  StatusResolutionMode,
+  StatusSystemConfig
+} from '../../shared/types/status.ts';
 import type { TurnRuleName, TurnStageRule, TurnSystemConfig } from '../../shared/types/turn.ts';
 import { isIntegerInRange, isNonNegativeInteger } from '../../shared/utils/validation.ts';
+
+const STATUS_RESOLUTION_MODE_VALUES = ['once-per-game', 'per-turn-risk-check'] as const satisfies StatusResolutionMode[];
 
 const CATEGORY_VALUES = ['achievement', 'relationship', 'self'] as const satisfies OpportunityCategory[];
 const TURN_RULE_VALUES = ['balanced', 'weighted-by-pick-counts'] as const satisfies TurnRuleName[];
@@ -52,14 +64,21 @@ export function validateTurnSystemConfig(value: unknown): TurnSystemConfig {
     throw new Error('Turn system config field fate must be an object');
   }
 
+  if (!config.statuses || typeof config.statuses !== 'object') {
+    throw new Error('Turn system config field statuses must be an object');
+  }
+
   const cycleStartAges = validateCycleStartAges(config.cycleStartAges);
   const categoryTieBreakOrder = validateCategoryTieBreakOrder(config.categoryTieBreakOrder);
   const stageRules = (config.stageRules as unknown[]).map((stageRule, index) => validateStageRule(stageRule, index));
   const fate = validateFateConfig(config.fate as Record<string, unknown>);
+  const statuses = validateStatusSystemConfig(config.statuses as Record<string, unknown>);
   const endAgeExclusive = config.endAgeExclusive as number;
   const redrawLimitPerTurn = config.redrawLimitPerTurn as number;
 
   validateStageCoverage(stageRules, cycleStartAges, endAgeExclusive);
+  validateUniqueStatusIds(statuses);
+  validateStatusEffectsAreNonEmpty(statuses);
 
   return {
     cycleStartAges,
@@ -67,8 +86,230 @@ export function validateTurnSystemConfig(value: unknown): TurnSystemConfig {
     redrawLimitPerTurn,
     categoryTieBreakOrder,
     stageRules,
-    fate
+    fate,
+    statuses
   };
+}
+
+function validateStatusSystemConfig(value: Record<string, unknown>): StatusSystemConfig {
+  return {
+    economicCrisis: validateEconomicCrisisConfig(value.economicCrisis),
+    professionalAchievement: validateProfessionalAchievementConfig(value.professionalAchievement),
+    socialStatus: validateSocialStatusConfig(value.socialStatus),
+    healthCrisis: validateHealthCrisisConfig(value.healthCrisis),
+    energyCrisis: validateEnergyCrisisConfig(value.energyCrisis),
+    lifeCrisis: validateLifeCrisisConfig(value.lifeCrisis)
+  };
+}
+
+function validateEconomicCrisisConfig(value: unknown): EconomicCrisisConfig {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Turn system statuses field economicCrisis must be an object');
+  }
+
+  const config = value as Record<string, unknown>;
+
+  return {
+    id: validateNonEmptyId(config.id, 'Turn system statuses field economicCrisis id'),
+    name: validateNonEmptyName(config.name, 'Turn system statuses field economicCrisis name'),
+    resolutionMode: validateResolutionMode(config.resolutionMode, 'Turn system statuses field economicCrisis resolutionMode', 'once-per-game'),
+    moneyMax: validateIntegerField(config.moneyMax, 'Turn system statuses field economicCrisis moneyMax'),
+    effects: validateStatusEffects(config.effects, 'Turn system statuses field economicCrisis effects')
+  };
+}
+
+function validateProfessionalAchievementConfig(value: unknown): ProfessionalAchievementConfig {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Turn system statuses field professionalAchievement must be an object');
+  }
+
+  const config = value as Record<string, unknown>;
+
+  return {
+    id: validateNonEmptyId(config.id, 'Turn system statuses field professionalAchievement id'),
+    name: validateNonEmptyName(config.name, 'Turn system statuses field professionalAchievement name'),
+    resolutionMode: validateResolutionMode(
+      config.resolutionMode,
+      'Turn system statuses field professionalAchievement resolutionMode',
+      'once-per-game'
+    ),
+    cognitionMin: validateIntegerField(config.cognitionMin, 'Turn system statuses field professionalAchievement cognitionMin'),
+    effects: validateStatusEffects(config.effects, 'Turn system statuses field professionalAchievement effects')
+  };
+}
+
+function validateSocialStatusConfig(value: unknown): SocialStatusConfig {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Turn system statuses field socialStatus must be an object');
+  }
+
+  const config = value as Record<string, unknown>;
+
+  return {
+    id: validateNonEmptyId(config.id, 'Turn system statuses field socialStatus id'),
+    name: validateNonEmptyName(config.name, 'Turn system statuses field socialStatus name'),
+    resolutionMode: validateResolutionMode(config.resolutionMode, 'Turn system statuses field socialStatus resolutionMode', 'once-per-game'),
+    influenceMin: validateIntegerField(config.influenceMin, 'Turn system statuses field socialStatus influenceMin'),
+    effects: validateStatusEffects(config.effects, 'Turn system statuses field socialStatus effects')
+  };
+}
+
+function validateHealthCrisisConfig(value: unknown): HealthCrisisConfig {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Turn system statuses field healthCrisis must be an object');
+  }
+
+  const config = value as Record<string, unknown>;
+
+  return {
+    id: validateNonEmptyId(config.id, 'Turn system statuses field healthCrisis id'),
+    name: validateNonEmptyName(config.name, 'Turn system statuses field healthCrisis name'),
+    resolutionMode: validateResolutionMode(
+      config.resolutionMode,
+      'Turn system statuses field healthCrisis resolutionMode',
+      'per-turn-risk-check'
+    ),
+    healthMax: validateIntegerField(config.healthMax, 'Turn system statuses field healthCrisis healthMax'),
+    probabilityPerNegativePoint: validateProbability(
+      config.probabilityPerNegativePoint,
+      'Turn system statuses field healthCrisis probabilityPerNegativePoint'
+    )
+  };
+}
+
+function validateEnergyCrisisConfig(value: unknown): EnergyCrisisConfig {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Turn system statuses field energyCrisis must be an object');
+  }
+
+  const config = value as Record<string, unknown>;
+
+  return {
+    id: validateNonEmptyId(config.id, 'Turn system statuses field energyCrisis id'),
+    name: validateNonEmptyName(config.name, 'Turn system statuses field energyCrisis name'),
+    resolutionMode: validateResolutionMode(
+      config.resolutionMode,
+      'Turn system statuses field energyCrisis resolutionMode',
+      'per-turn-risk-check'
+    ),
+    energyMax: validateIntegerField(config.energyMax, 'Turn system statuses field energyCrisis energyMax'),
+    probabilityPerNegativePoint: validateProbability(
+      config.probabilityPerNegativePoint,
+      'Turn system statuses field energyCrisis probabilityPerNegativePoint'
+    )
+  };
+}
+
+function validateLifeCrisisConfig(value: unknown): LifeCrisisConfig {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Turn system statuses field lifeCrisis must be an object');
+  }
+
+  const config = value as Record<string, unknown>;
+
+  return {
+    id: validateNonEmptyId(config.id, 'Turn system statuses field lifeCrisis id'),
+    name: validateNonEmptyName(config.name, 'Turn system statuses field lifeCrisis name'),
+    resolutionMode: validateResolutionMode(config.resolutionMode, 'Turn system statuses field lifeCrisis resolutionMode', 'per-turn-risk-check'),
+    ageMin: validateIntegerField(config.ageMin, 'Turn system statuses field lifeCrisis ageMin'),
+    healthMax: validateIntegerField(config.healthMax, 'Turn system statuses field lifeCrisis healthMax'),
+    energyMax: validateIntegerField(config.energyMax, 'Turn system statuses field lifeCrisis energyMax'),
+    deathProbability: validateProbability(config.deathProbability, 'Turn system statuses field lifeCrisis deathProbability')
+  };
+}
+
+function validateResolutionMode<T extends StatusResolutionMode>(
+  value: unknown,
+  label: string,
+  expected: T
+): T {
+  if (!isOneOf(value, STATUS_RESOLUTION_MODE_VALUES)) {
+    throw new Error(`${label} is invalid`);
+  }
+
+  if (value !== expected) {
+    throw new Error(`${label} must be ${expected}`);
+  }
+
+  return value;
+}
+
+function validateNonEmptyId(value: unknown, label: string): string {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${label} must be a non-empty string`);
+  }
+
+  return value;
+}
+
+function validateNonEmptyName(value: unknown, label: string): string {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${label} must be a non-empty string`);
+  }
+
+  return value;
+}
+
+function validateIntegerField(value: unknown, label: string): number {
+  if (!isIntegerInRange(value, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)) {
+    throw new Error(`${label} must be an integer`);
+  }
+
+  return value;
+}
+
+function validateProbability(value: unknown, label: string): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    throw new Error(`${label} must be a number`);
+  }
+
+  if (value < 0 || value > 1) {
+    throw new Error(`${label} must be between 0 and 1`);
+  }
+
+  return value;
+}
+
+function validateStatusEffects(value: unknown, label: string): StatDelta[] {
+  if (!Array.isArray(value)) {
+    throw new Error(`${label} must be an array`);
+  }
+
+  return validateStatDeltas(label, value);
+}
+
+function validateUniqueStatusIds(statuses: StatusSystemConfig): void {
+  const ids = [
+    statuses.economicCrisis.id,
+    statuses.professionalAchievement.id,
+    statuses.socialStatus.id,
+    statuses.healthCrisis.id,
+    statuses.energyCrisis.id,
+    statuses.lifeCrisis.id
+  ];
+  const seen = new Set<string>();
+
+  for (const id of ids) {
+    if (seen.has(id)) {
+      throw new Error(`Turn system status ids must be unique: ${id}`);
+    }
+
+    seen.add(id);
+  }
+}
+
+function validateStatusEffectsAreNonEmpty(statuses: StatusSystemConfig): void {
+  if (statuses.economicCrisis.effects.length === 0) {
+    throw new Error('Turn system statuses field economicCrisis effects must not be empty');
+  }
+
+  if (statuses.professionalAchievement.effects.length === 0) {
+    throw new Error('Turn system statuses field professionalAchievement effects must not be empty');
+  }
+
+  if (statuses.socialStatus.effects.length === 0) {
+    throw new Error('Turn system statuses field socialStatus effects must not be empty');
+  }
 }
 
 function validateCycleStartAges(value: unknown[]): number[] {
