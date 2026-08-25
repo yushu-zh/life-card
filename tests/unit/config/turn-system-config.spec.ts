@@ -19,7 +19,7 @@ describe('loadTurnSystemConfig', () => {
     assert.equal(config.statuses.economicCrisis.id, 'economic-crisis');
     assert.equal(config.statuses.economicCrisis.moneyMax, 0);
     assert.equal(config.statuses.healthCrisis.probabilityPerNegativePoint, 0.01);
-    assert.equal(config.statuses.energyCrisis.resolutionMode, 'per-turn-effect');
+    assert.equal(config.statuses.energyCrisis.resolutionMode, 'per-cycle-effect');
     assert.equal(config.statuses.energyCrisis.energyMax, -3);
     assert.deepEqual(config.statuses.energyCrisis.effects, [{ key: 'health', amount: -1 }]);
     assert.equal(config.statuses.lifeCrisis.deathProbability, 0.05);
@@ -100,7 +100,7 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-effect',
+              resolutionMode: 'per-cycle-effect',
               energyMax: -3,
               effects: [{ key: 'health', amount: -1 }]
             },
@@ -193,7 +193,7 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-effect',
+              resolutionMode: 'per-cycle-effect',
               energyMax: -3,
               effects: [{ key: 'health', amount: -1 }]
             },
@@ -274,7 +274,7 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-effect',
+              resolutionMode: 'per-cycle-effect',
               energyMax: -3,
               effects: [{ key: 'health', amount: -1 }]
             },
@@ -361,7 +361,7 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-effect',
+              resolutionMode: 'per-cycle-effect',
               energyMax: -3,
               effects: [{ key: 'health', amount: -1 }]
             },
@@ -448,7 +448,7 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-effect',
+              resolutionMode: 'per-cycle-effect',
               energyMax: -3,
               effects: [{ key: 'health', amount: -1 }]
             },

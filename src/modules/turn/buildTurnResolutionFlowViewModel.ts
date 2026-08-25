@@ -159,7 +159,7 @@ function buildStatusStep(
     body.push(fallback.triggerReasonTemplate);
   }
 
-  if (statusResult.kind === 'one-time-effect' || statusResult.kind === 'per-turn-effect') {
+  if (statusResult.kind === 'one-time-effect' || statusResult.kind === 'per-cycle-effect') {
     body.push(
       fallback?.resultTemplate ??
         presentation.templates.statusResult.replace('{statusName}', statusResult.name)

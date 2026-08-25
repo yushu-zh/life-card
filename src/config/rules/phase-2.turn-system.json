@@ -96,18 +96,18 @@
       "id": "professional-achievement",
       "name": "专业成就",
       "resolutionMode": "once-per-game",
-      "cognitionMin": 5,
+      "cognitionMin": 7,
       "effects": [
-        { "key": "influence", "amount": 1 }
+        { "key": "influence", "amount": 2 }
       ]
     },
     "socialStatus": {
       "id": "social-status",
       "name": "社会地位",
       "resolutionMode": "once-per-game",
-      "influenceMin": 5,
+      "influenceMin": 8,
       "effects": [
-        { "key": "money", "amount": 1 }
+        { "key": "money", "amount": 2 }
       ]
     },
     "healthCrisis": {
@@ -120,8 +120,8 @@
     "energyCrisis": {
       "id": "energy-crisis",
       "name": "精力危机",
-      "resolutionMode": "per-turn-effect",
-      "energyMax": -3,
+      "resolutionMode": "per-cycle-effect",
+      "energyMax": -4,
       "effects": [
         { "key": "health", "amount": -1 }
       ]

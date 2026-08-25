@@ -7,7 +7,7 @@ import type {
   HealthCrisisConfig,
   LifeCrisisConfig,
   OneTimeStatusResult,
-  PerTurnEffectStatusResult,
+  PerCycleEffectStatusResult,
   ProfessionalAchievementConfig,
   SocialStatusConfig,
   StatusConditionSnapshot,
@@ -196,25 +196,33 @@ function resolveHealthCrisis(
   };
 }
 
-// 精力危机：精力 <= 阈值时每回合健康-1，不再是死亡风险。
+// 精力危机：精力 <= 阈值时，每个周期健康-1（同一周期内不重复扣），不再是死亡风险。
 function resolveEnergyCrisis(
   snapshot: GameSessionSnapshot,
   config: EnergyCrisisConfig
-): PerTurnEffectStatusResult | null {
+): PerCycleEffectStatusResult | null {
   const actualEnergy = snapshot.stats.resources.energy;
 
   if (actualEnergy > config.energyMax) {
     return null;
   }
 
+  // 每个周期只扣一次健康：本周期已经扣过就不再重复扣。
+  const currentCycle = snapshot.progression.cycle;
+
+  if (snapshot.records.energyCrisisLastCycle === currentCycle) {
+    return null;
+  }
+
   const conditions = [buildCondition('energy', '<=', config.energyMax, actualEnergy)];
 
   applyStatDeltas(snapshot, config.effects);
+  snapshot.records.energyCrisisLastCycle = currentCycle;
 
   return {
     id: config.id,
     name: config.name,
-    kind: 'per-turn-effect',
+    kind: 'per-cycle-effect',
     resolutionMode: config.resolutionMode,
     firstTrigger: false,
     conditions,

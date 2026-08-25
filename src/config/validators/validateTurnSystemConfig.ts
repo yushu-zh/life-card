@@ -13,7 +13,7 @@ import type {
 import type { EnergyRulesConfig, MoneyRulesConfig, TurnRuleName, TurnStageRule, TurnSystemConfig } from '../../shared/types/turn.ts';
 import { isIntegerInRange, isNonNegativeInteger } from '../../shared/utils/validation.ts';
 
-const STATUS_RESOLUTION_MODE_VALUES = ['once-per-game', 'per-turn-risk-check', 'per-turn-effect'] as const satisfies StatusResolutionMode[];
+const STATUS_RESOLUTION_MODE_VALUES = ['once-per-game', 'per-turn-risk-check', 'per-cycle-effect'] as const satisfies StatusResolutionMode[];
 
 const CATEGORY_VALUES = ['achievement', 'relationship', 'self'] as const satisfies OpportunityCategory[];
 const TURN_RULE_VALUES = ['balanced', 'weighted-by-pick-counts'] as const satisfies TurnRuleName[];
@@ -202,7 +202,7 @@ function validateEnergyCrisisConfig(value: unknown): EnergyCrisisConfig {
     resolutionMode: validateResolutionMode(
       config.resolutionMode,
       'Turn system statuses field energyCrisis resolutionMode',
-      'per-turn-effect'
+      'per-cycle-effect'
     ),
     energyMax: validateIntegerField(config.energyMax, 'Turn system statuses field energyCrisis energyMax'),
     effects: validateStatusEffects(config.effects, 'Turn system statuses field energyCrisis effects')

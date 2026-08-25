@@ -34,6 +34,8 @@ export interface GameSessionSnapshot {
     selectedEventIds: string[];
     discardedEventIds: string[];
     triggeredStateIds: string[];
+    // 精力危机最近一次健康-1 生效所在的周期号；用于实现「每周期」而非「每回合」触发。
+    energyCrisisLastCycle: number | null;
     // lifeHistory 现在只保留长期要消费的整回合历史，避免混入不同统计粒度的记录。
     lifeHistory: TurnHistoryEntry[];
     categoryPickCounts: {

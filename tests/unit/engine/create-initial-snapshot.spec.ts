@@ -148,6 +148,7 @@ describe('createInitialSnapshot', () => {
         selectedEventIds: [],
         discardedEventIds: [],
         triggeredStateIds: [],
+        energyCrisisLastCycle: null,
         lifeHistory: [],
         categoryPickCounts: {
           achievement: 0,

@@ -112,8 +112,8 @@ describe('resolveTurnStatuses', () => {
       result.results.map((status) => status.id),
       ['health-crisis', 'energy-crisis', 'life-crisis']
     );
-    // 精力危机现在是每回合健康-1 的持续效果，不再是死亡风险。
-    assert.equal(result.results[1]?.kind, 'per-turn-effect');
+    // 精力危机现在是每周期健康-1 的持续效果，不再是死亡风险。
+    assert.equal(result.results[1]?.kind, 'per-cycle-effect');
     assert.deepEqual(result.results[1]?.appliedDeltas, [{ key: 'health', amount: -1 }]);
     assert.equal(result.updatedSnapshot.stats.outcomes.health, -4);
     assert.equal(result.results[2]?.kind, 'death-risk');
@@ -122,7 +122,7 @@ describe('resolveTurnStatuses', () => {
     assert.equal(result.updatedSnapshot.lifecycle.endReason, 'status-life-crisis');
   });
 
-  it('energy crisis does not end the game and only applies health -1 each turn', () => {
+  it('energy crisis does not end the game and applies health -1 once per cycle', () => {
     const snapshot = createBaseSnapshot();
     snapshot.stats.resources.energy = -3;
 
@@ -131,10 +131,44 @@ describe('resolveTurnStatuses', () => {
     });
 
     assert.deepEqual(result.results.map((status) => status.id), ['energy-crisis']);
-    assert.equal(result.results[0]?.kind, 'per-turn-effect');
+    assert.equal(result.results[0]?.kind, 'per-cycle-effect');
     assert.equal(result.ended, false);
     assert.equal(result.updatedSnapshot.lifecycle.isEnded, false);
     assert.equal(result.updatedSnapshot.stats.outcomes.health, 1);
+  });
+
+  it('energy crisis only reduces health once within the same cycle', () => {
+    const snapshot = createBaseSnapshot();
+    snapshot.stats.resources.energy = -3;
+
+    const first = resolveTurnStatuses(snapshot, loadTurnSystemConfig().statuses, {
+      random: () => 0.9
+    });
+
+    assert.equal(first.updatedSnapshot.stats.outcomes.health, 1);
+
+    // 同一周期内再次结算：精力仍 <= -3，但不应再扣健康。
+    const second = resolveTurnStatuses(first.updatedSnapshot, loadTurnSystemConfig().statuses, {
+      random: () => 0.9
+    });
+
+    assert.deepEqual(second.results, []);
+    assert.equal(second.updatedSnapshot.stats.outcomes.health, 1);
+  });
+
+  it('energy crisis reduces health again when entering a new cycle', () => {
+    const snapshot = createBaseSnapshot();
+    snapshot.stats.resources.energy = -3;
+    snapshot.records.energyCrisisLastCycle = 1;
+    snapshot.progression.cycle = 2;
+
+    const result = resolveTurnStatuses(snapshot, loadTurnSystemConfig().statuses, {
+      random: () => 0.9
+    });
+
+    assert.deepEqual(result.results.map((status) => status.id), ['energy-crisis']);
+    assert.equal(result.updatedSnapshot.stats.outcomes.health, 1);
+    assert.equal(result.updatedSnapshot.records.energyCrisisLastCycle, 2);
   });
 
   it('stops after the first death risk that kills the player', () => {
