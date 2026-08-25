@@ -117,12 +117,20 @@ function resolveProfessionalAchievement(
   config: ProfessionalAchievementConfig
 ): OneTimeStatusResult | null {
   const actualCognition = snapshot.stats.abilities.cognition;
+  const actualExperience = snapshot.stats.outcomes.experience;
 
-  if (actualCognition < config.cognitionMin || snapshot.records.triggeredStateIds.includes(config.id)) {
+  if (
+    actualCognition <= config.cognitionAbove ||
+    actualExperience <= config.experienceAbove ||
+    snapshot.records.triggeredStateIds.includes(config.id)
+  ) {
     return null;
   }
 
-  const conditions = [buildCondition('cognition', '>=', config.cognitionMin, actualCognition)];
+  const conditions = [
+    buildCondition('cognition', '>', config.cognitionAbove, actualCognition),
+    buildCondition('experience', '>', config.experienceAbove, actualExperience)
+  ];
 
   applyStatDeltas(snapshot, config.effects);
   snapshot.records.triggeredStateIds.push(config.id);

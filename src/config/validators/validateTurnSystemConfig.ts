@@ -145,7 +145,8 @@ function validateProfessionalAchievementConfig(value: unknown): ProfessionalAchi
       'Turn system statuses field professionalAchievement resolutionMode',
       'once-per-game'
     ),
-    cognitionMin: validateIntegerField(config.cognitionMin, 'Turn system statuses field professionalAchievement cognitionMin'),
+    cognitionAbove: validateIntegerField(config.cognitionAbove, 'Turn system statuses field professionalAchievement cognitionAbove'),
+    experienceAbove: validateIntegerField(config.experienceAbove, 'Turn system statuses field professionalAchievement experienceAbove'),
     effects: validateStatusEffects(config.effects, 'Turn system statuses field professionalAchievement effects')
   };
 }

@@ -60,8 +60,9 @@ describe('resolveTurnStatuses', () => {
 
   it('chains professional achievement into social status in the same turn', () => {
     const snapshot = createBaseSnapshot();
-    snapshot.stats.abilities.cognition = 5;
-    snapshot.stats.outcomes.influence = 4;
+    snapshot.stats.abilities.cognition = 4;
+    snapshot.stats.outcomes.experience = 8;
+    snapshot.stats.outcomes.influence = 6;
 
     const result = resolveTurnStatuses(snapshot, loadTurnSystemConfig().statuses, {
       random: () => 0.9
@@ -71,9 +72,21 @@ describe('resolveTurnStatuses', () => {
       result.results.map((status) => status.id),
       ['professional-achievement', 'social-status']
     );
-    assert.equal(result.updatedSnapshot.stats.outcomes.influence, 5);
-    assert.equal(result.updatedSnapshot.stats.resources.money, 6);
+    assert.equal(result.updatedSnapshot.stats.outcomes.influence, 8);
+    assert.equal(result.updatedSnapshot.stats.resources.money, 7);
     assert.deepEqual(result.updatedSnapshot.records.triggeredStateIds, ['professional-achievement', 'social-status']);
+  });
+
+  it('does not trigger professional achievement when cognition or experience is too low', () => {
+    const snapshot = createBaseSnapshot();
+    snapshot.stats.abilities.cognition = 4; // 认知 > 3 满足
+    snapshot.stats.outcomes.experience = 7; // 阅历 = 7，不满足 > 7
+
+    const result = resolveTurnStatuses(snapshot, loadTurnSystemConfig().statuses, {
+      random: () => 0.9
+    });
+
+    assert.deepEqual(result.results, []);
   });
 
   it('applies health crisis death probability based on absolute health value', () => {
@@ -100,7 +113,7 @@ describe('resolveTurnStatuses', () => {
     const snapshot = createBaseSnapshot();
     snapshot.progression.age = 55;
     snapshot.stats.outcomes.health = -3;
-    snapshot.stats.resources.energy = -3;
+    snapshot.stats.resources.energy = -4;
 
     // 依次消耗随机：健康危机(0.9 存活)、精力危机(无掷骰，健康-1)、生命危机(0.04 死亡)。
     const randomValues = [0.9, 0.04];
@@ -124,7 +137,7 @@ describe('resolveTurnStatuses', () => {
 
   it('energy crisis does not end the game and applies health -1 once per cycle', () => {
     const snapshot = createBaseSnapshot();
-    snapshot.stats.resources.energy = -3;
+    snapshot.stats.resources.energy = -4;
 
     const result = resolveTurnStatuses(snapshot, loadTurnSystemConfig().statuses, {
       random: () => 0.9
@@ -139,7 +152,7 @@ describe('resolveTurnStatuses', () => {
 
   it('energy crisis only reduces health once within the same cycle', () => {
     const snapshot = createBaseSnapshot();
-    snapshot.stats.resources.energy = -3;
+    snapshot.stats.resources.energy = -4;
 
     const first = resolveTurnStatuses(snapshot, loadTurnSystemConfig().statuses, {
       random: () => 0.9
@@ -147,7 +160,7 @@ describe('resolveTurnStatuses', () => {
 
     assert.equal(first.updatedSnapshot.stats.outcomes.health, 1);
 
-    // 同一周期内再次结算：精力仍 <= -3，但不应再扣健康。
+    // 同一周期内再次结算：精力仍 <= -4，但不应再扣健康。
     const second = resolveTurnStatuses(first.updatedSnapshot, loadTurnSystemConfig().statuses, {
       random: () => 0.9
     });
@@ -158,7 +171,7 @@ describe('resolveTurnStatuses', () => {
 
   it('energy crisis reduces health again when entering a new cycle', () => {
     const snapshot = createBaseSnapshot();
-    snapshot.stats.resources.energy = -3;
+    snapshot.stats.resources.energy = -4;
     snapshot.records.energyCrisisLastCycle = 1;
     snapshot.progression.cycle = 2;
 

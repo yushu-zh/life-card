@@ -26,7 +26,7 @@ describe('runSingleSimulationGame', () => {
   });
 
   it('提前死亡时 earlyDeath 为 true', async () => {
-    const result = await runSingleSimulationGame({ strategyId: 'random', gameIndex: 1, config, seed: 'probe-15' });
+    const result = await runSingleSimulationGame({ strategyId: 'random', gameIndex: 1, config, seed: 'probe-273' });
 
     assert.equal(result.invalid, false);
     assert.equal(result.earlyDeath, true);

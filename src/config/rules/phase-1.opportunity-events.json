@@ -25,8 +25,7 @@
           { "key": "experience", "amount": 1 }
         ],
         "fixedCost": [
-          { "key": "money", "amount": -1 },
-          { "key": "energy", "amount": -1 }
+          { "key": "money", "amount": -1 }
         ],
         "risk": [
           { "key": "money", "amount": -1 }
@@ -87,8 +86,7 @@
           { "key": "energy", "amount": -1 }
         ],
         "risk": [
-          { "key": "money", "amount": -1 },
-          { "key": "energy", "amount": -1 }
+          { "key": "money", "amount": -1 }
         ],
         "criticalBonus": [
           { "key": "money", "amount": 2 }
@@ -146,7 +144,7 @@
           { "key": "energy", "amount": -1 }
         ],
         "risk": [
-          { "key": "money", "amount": -2 },
+          { "key": "money", "amount": -3 },
           { "key": "energy", "amount": -1 }
         ],
         "criticalBonus": [
@@ -175,7 +173,7 @@
           { "key": "money", "amount": -1 }
         ],
         "risk": [
-          { "key": "money", "amount": -2 }
+          { "key": "money", "amount": -3 }
         ],
         "criticalBonus": [
           { "key": "money", "amount": 2 }
@@ -410,7 +408,7 @@
       },
       "effects": {
         "reward": [
-          { "key": "influence", "amount": 2 }
+          { "key": "influence", "amount": 1 }
         ],
         "fixedCost": [
           { "key": "energy", "amount": -1 }

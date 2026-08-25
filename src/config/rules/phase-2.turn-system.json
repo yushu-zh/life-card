@@ -96,7 +96,8 @@
       "id": "professional-achievement",
       "name": "专业成就",
       "resolutionMode": "once-per-game",
-      "cognitionMin": 7,
+      "cognitionAbove": 3,
+      "experienceAbove": 7,
       "effects": [
         { "key": "influence", "amount": 2 }
       ]

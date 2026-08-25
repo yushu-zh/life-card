@@ -19,8 +19,10 @@ describe('loadTurnSystemConfig', () => {
     assert.equal(config.statuses.economicCrisis.id, 'economic-crisis');
     assert.equal(config.statuses.economicCrisis.moneyMax, 0);
     assert.equal(config.statuses.healthCrisis.probabilityPerNegativePoint, 0.01);
+    assert.equal(config.statuses.professionalAchievement.cognitionAbove, 3);
+    assert.equal(config.statuses.professionalAchievement.experienceAbove, 7);
     assert.equal(config.statuses.energyCrisis.resolutionMode, 'per-cycle-effect');
-    assert.equal(config.statuses.energyCrisis.energyMax, -3);
+    assert.equal(config.statuses.energyCrisis.energyMax, -4);
     assert.deepEqual(config.statuses.energyCrisis.effects, [{ key: 'health', amount: -1 }]);
     assert.equal(config.statuses.lifeCrisis.deathProbability, 0.05);
     assert.equal(config.energyRules.restCardId, 'self-rest');
@@ -80,7 +82,8 @@ describe('validateTurnSystemConfig', () => {
               id: 'professional-achievement',
               name: '专业成就',
               resolutionMode: 'once-per-game',
-              cognitionMin: 5,
+              cognitionAbove: 3,
+              experienceAbove: 7,
               effects: [{ key: 'influence', amount: 1 }]
             },
             socialStatus: {
@@ -173,7 +176,8 @@ describe('validateTurnSystemConfig', () => {
               id: 'professional-achievement',
               name: '专业成就',
               resolutionMode: 'once-per-game',
-              cognitionMin: 5,
+              cognitionAbove: 3,
+              experienceAbove: 7,
               effects: [{ key: 'influence', amount: 1 }]
             },
             socialStatus: {
@@ -254,7 +258,8 @@ describe('validateTurnSystemConfig', () => {
               id: 'professional-achievement',
               name: '专业成就',
               resolutionMode: 'once-per-game',
-              cognitionMin: 5,
+              cognitionAbove: 3,
+              experienceAbove: 7,
               effects: [{ key: 'influence', amount: 1 }]
             },
             socialStatus: {
@@ -341,7 +346,8 @@ describe('validateTurnSystemConfig', () => {
               id: 'duplicated-status',
               name: '专业成就',
               resolutionMode: 'once-per-game',
-              cognitionMin: 5,
+              cognitionAbove: 3,
+              experienceAbove: 7,
               effects: [{ key: 'influence', amount: 1 }]
             },
             socialStatus: {
@@ -428,7 +434,8 @@ describe('validateTurnSystemConfig', () => {
               id: 'professional-achievement',
               name: '专业成就',
               resolutionMode: 'once-per-game',
-              cognitionMin: 5,
+              cognitionAbove: 3,
+              experienceAbove: 7,
               effects: [{ key: 'influence', amount: 1 }]
             },
             socialStatus: {

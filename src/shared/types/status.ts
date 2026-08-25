@@ -1,7 +1,7 @@
 import type { StatDelta } from './opportunity.ts';
 
 export type StatusResolutionMode = 'once-per-game' | 'per-turn-risk-check' | 'per-cycle-effect';
-export type StatusConditionKey = 'money' | 'cognition' | 'influence' | 'health' | 'energy' | 'age';
+export type StatusConditionKey = 'money' | 'cognition' | 'influence' | 'health' | 'energy' | 'experience' | 'age';
 
 // 一次性状态的公共配置。
 interface OneTimeStatusConfigBase {
@@ -18,7 +18,8 @@ export interface EconomicCrisisConfig extends OneTimeStatusConfigBase {
 
 // 专业成就的配置。
 export interface ProfessionalAchievementConfig extends OneTimeStatusConfigBase {
-  cognitionMin: number;
+  cognitionAbove: number;
+  experienceAbove: number;
 }
 
 // 社会地位的配置。
@@ -68,7 +69,7 @@ export interface StatusSystemConfig {
 // 一条状态触发条件在结算时的快照。
 export interface StatusConditionSnapshot {
   key: StatusConditionKey;
-  operator: '<=' | '>=';
+  operator: '<=' | '>=' | '>';
   threshold: number;
   actual: number;
 }

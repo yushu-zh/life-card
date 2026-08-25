@@ -57,12 +57,12 @@ describe('settleOpportunityEvent', () => {
       totalScore: 8
     });
     assert.deepEqual(summary.appliedDeltas, [
-      { key: 'money', amount: 0 },
+      { key: 'money', amount: -1 },
       { key: 'freedom', amount: 1 },
       { key: 'energy', amount: -2 }
     ]);
     assert.equal(summary.updatedSnapshot.stats.resources.energy, 3);
-    assert.equal(summary.updatedSnapshot.stats.resources.money, 5);
+    assert.equal(summary.updatedSnapshot.stats.resources.money, 4);
     assert.equal(summary.updatedSnapshot.stats.outcomes.freedom, 3);
     assert.deepEqual(summary.updatedSnapshot.records.selectedEventIds, ['achievement-startup']);
     assert.equal(summary.updatedSnapshot.records.categoryPickCounts.achievement, 1);
