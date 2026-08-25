@@ -1,0 +1,411 @@
+{
+  "labels": {
+    "createPlayer": {
+      "title": "创建人物",
+      "subtitle": "填满能力条，让你的角色更鲜明",
+      "nickname": "昵称",
+      "nicknamePlaceholder": "输入一个称呼",
+      "skillTags": "技能",
+      "skillTagsPlaceholder": "例如：编程、写作、谈判",
+      "skillTagsAction": "添加",
+      "education": "学历",
+      "educationPlaceholder": "例如：本科",
+      "industry": "行业",
+      "industryPlaceholder": "例如：互联网",
+      "wishes": "愿望",
+      "wishesPlaceholder": "例如：环游世界、创业",
+      "wishesAction": "添加",
+      "abilitiesTitle": "初始能力分配",
+      "remainingPointsTemplate": "剩余点数：{remaining} / {total}",
+      "startAction": "开始人生"
+    },
+    "turnOverview": {
+      "title": "第 {age} 岁的选择",
+      "subtitle": "你面前出现了新的机会。",
+      "ageTemplate": "{age}岁",
+      "cycleTemplate": "第{cycle}周期",
+      "turnTemplate": "第{turn}回合",
+      "ageTrackLabel": "人生刻度",
+      "abilitiesTitle": "能力",
+      "resourcesTitle": "资源",
+      "outcomesTitle": "结算指标",
+      "rerollAction": "换牌一次（剩余{remaining}次）",
+      "rerollUsed": "本回合已换",
+      "rerollDisabledMessage": "本回合换牌机会已用完",
+      "rerollSuccessToast": "旧牌已失效，不能返回",
+      "chooseCardHint": "点击任意一张卡，做出本回合的选择。",
+      "resolvingMessage": "正在结算本回合…"
+    },
+    "cards": {
+      "noCheckLabel": "无需检定",
+      "rewardHeading": "可能收获",
+      "fixedCostHeading": "固定代价",
+      "riskHeading": "失败风险"
+    },
+    "rolling": {
+      "title": "正在判定结果…",
+      "loadingText": "骰子转动中"
+    },
+    "resultFlow": {
+      "opportunityStepTitle": "选择：{eventName}",
+      "noCheckGradeLabel": "直接生效",
+      "diceTemplate": "掷骰：2d6 = {diceTotal}",
+      "totalScoreLabel": "总分：{total}",
+      "deltaHeading": "本次变化",
+      "continueAction": "继续",
+      "nextTurnAction": "进入下一回合",
+      "fateStepTitle": "触发命运事件",
+      "fateRuleHint": "已触发命运事件",
+      "fateDeltaHeading": "本次变化",
+      "mitigationTitle": "应变减免",
+      "statusStepTitle": "当前状态",
+      "riskStillActiveLabel": "风险仍在持续，请留意后续回合。",
+      "gameOverAction": "查看终局",
+      "reportAction": "查看人生报告",
+      "resultGradePrefix": "结果：",
+      "descriptionHeading": "结果描述",
+      "checkTemplate": "检定：{abilities}"
+    },
+    "gameOver": {
+      "title": "本局结束",
+      "subtitle": "{reason}，本局人生到此结束。",
+      "reportAction": "查看人生报告"
+    },
+    "report": {
+      "title": "人生报告",
+      "restartAction": "重新开始",
+      "finalStatsHeading": "最终属性摘要"
+    },
+    "common": {
+      "unknownLabel": "未知",
+      "loadingSessionText": "正在加载当前对局…",
+      "emptyText": "暂无数据"
+    }
+  },
+  "statOrder": {
+    "abilities": [
+      "cognition",
+      "execution",
+      "social",
+      "creativity",
+      "adaptability"
+    ],
+    "resources": [
+      "money",
+      "energy"
+    ],
+    "outcomes": [
+      "happiness",
+      "freedom",
+      "health",
+      "experience",
+      "influence"
+    ]
+  },
+  "statLabels": {
+    "cognition": "认知",
+    "execution": "行动",
+    "social": "人际",
+    "creativity": "创造",
+    "adaptability": "应变",
+    "money": "金钱",
+    "energy": "精力",
+    "happiness": "幸福",
+    "freedom": "自由",
+    "health": "健康",
+    "experience": "阅历",
+    "influence": "影响"
+  },
+  "toneThresholds": {
+    "lowMoneyMax": 1,
+    "lowEnergyMax": 1,
+    "lowHealthMax": 1
+  },
+  "riskHints": {
+    "economicPressure": {
+      "title": "经济压力",
+      "text": "当前积蓄偏低，某些选择会让你更加紧张。"
+    },
+    "energyWarning": {
+      "title": "精力透支",
+      "text": "你的精力已经见底，继续高消耗行动会有风险。"
+    },
+    "healthWarning": {
+      "title": "健康风险",
+      "text": "健康状态持续走低，需要尽快调整节奏。"
+    },
+    "lifeCrisis": {
+      "title": "高危状态",
+      "text": "年龄与身体状态叠加，当前处于生命危机边缘。"
+    }
+  },
+  "templates": {
+    "eventShortDescription": "你决定把注意力放在「{eventName}」上。",
+    "opportunityResult": {
+      "direct": "{eventName} 不需要额外检定，直接生效。",
+      "failure": "{eventName} 的结果不如预期，你付出了代价。",
+      "costlySuccess": "{eventName} 勉强成功了，但你也承担了相应的代价。",
+      "success": "{eventName} 取得了不错的效果。",
+      "criticalSuccess": "{eventName} 获得了超出预期的成果。"
+    },
+    "fateDescription": "局势发生了变化：{fateName}。",
+    "statusTriggerReason": "由于 {triggerReason}，你受到了 {statusName} 的影响。",
+    "statusResult": "{statusName} 使你的状态发生了以下变化。",
+    "statusDeath": "长期的高风险状态最终导致了不可逆的结局。",
+    "reportOpening": "这是 {nickname} 的一生。",
+    "reportEnding": "人生在 {age} 岁画上了句号。"
+  },
+  "eventCardFallbacks": {
+    "achievement-advanced-study": {
+      "shortDescription": "你决定继续深造，把时间和资源投入到学习上。"
+    },
+    "achievement-job-opportunity": {
+      "shortDescription": "一家初创公司向你发出了邀请，薪资更高，但节奏会明显加快。"
+    },
+    "achievement-career-shift": {
+      "shortDescription": "你正在考虑转换职业方向，迎接新的挑战。"
+    },
+    "achievement-promotion": {
+      "shortDescription": "升职的机会来了，你需要证明自己的价值。"
+    },
+    "achievement-startup": {
+      "shortDescription": "你决定创业，把积蓄和精力押注在自己的想法上。"
+    },
+    "achievement-investment": {
+      "shortDescription": "一次投资摆在面前，收益与风险并存。"
+    },
+    "relationship-romance": {
+      "shortDescription": "一段新的感情萌芽，需要用心经营。"
+    },
+    "relationship-marriage": {
+      "shortDescription": "你正在考虑是否要踏入婚姻的殿堂。"
+    },
+    "relationship-family": {
+      "shortDescription": "家庭的责任在召唤你，这需要做出长期承诺。"
+    },
+    "relationship-home-car": {
+      "shortDescription": "置办大件物品能提升生活品质，但也要付出代价。"
+    },
+    "relationship-friends": {
+      "shortDescription": "朋友关系的维护能扩大你的支持网络。"
+    },
+    "relationship-parents": {
+      "shortDescription": "你把更多时间花在照顾父母上。"
+    },
+    "relationship-children": {
+      "shortDescription": "孩子的到来会改变你的人生重心。"
+    },
+    "self-create-work": {
+      "shortDescription": "你想尝试创作一些属于自己的东西。"
+    },
+    "self-charity": {
+      "shortDescription": "你决定回馈社会，参与一些公益行动。"
+    },
+    "self-hobby": {
+      "shortDescription": "培养一个爱好，让生活多一些色彩。"
+    },
+    "self-travel": {
+      "shortDescription": "一场旅行能让你从日常中抽离，获得新的视角。"
+    },
+    "self-fitness": {
+      "shortDescription": "你把时间投入到运动和健康管理上。"
+    },
+    "self-discovery": {
+      "shortDescription": "你尝试探索自己真正想要的人生方向。"
+    },
+    "self-rest": {
+      "shortDescription": "你决定暂时停下来，给自己一段喘息的时间。",
+      "fixedCostHints": [
+        "无固定代价"
+      ],
+      "riskHints": [
+        "几乎无风险"
+      ]
+    }
+  },
+  "opportunityResultFallbacks": {
+    "achievement-advanced-study": {
+      "direct": "深造机会直接生效，你的认知和经验稳步提升。",
+      "failure": "这次深造没有带来预期的突破，你花费了时间和金钱。",
+      "costlySuccess": "深造让你学有所成，但也背上了不小的经济压力。",
+      "success": "深造顺利，你的视野和能力都得到了拓展。",
+      "criticalSuccess": "这次深造成为了你人生的重要转折点，收获远超预期。"
+    },
+    "achievement-job-opportunity": {
+      "direct": "工作机会直接生效，你获得了新的收入来源。",
+      "failure": "这次求职并不顺利，你投入了精力却收效甚微。",
+      "costlySuccess": "你拿到了 offer，但高强度工作开始消耗你的健康。",
+      "success": "新工作带来了不错的收入和经验增长。",
+      "criticalSuccess": "这份工作远超预期，你的职业道路豁然开朗。"
+    },
+    "achievement-career-shift": {
+      "failure": "职业转型比你想象得更困难，你付出了代价。",
+      "success": "你成功转入新领域，积累了宝贵的经验。",
+      "criticalSuccess": "这次转型非常成功，你获得了更大的自由空间。"
+    },
+    "achievement-promotion": {
+      "failure": "升职申请没有通过，你的努力暂时没有回报。",
+      "success": "你获得了晋升，收入和影响力都有所提升。",
+      "criticalSuccess": "破格晋升让你在职场上大放异彩。"
+    },
+    "achievement-startup": {
+      "failure": "创业失败，你损失了大量金钱和精力。",
+      "success": "创业小有起色，你获得了宝贵的实战经验。",
+      "criticalSuccess": "创业项目大获成功，你的人生跃上新台阶。"
+    },
+    "achievement-investment": {
+      "failure": "投资失利，你的本金大幅缩水。",
+      "success": "投资回报不错，你的资产有所增加。",
+      "criticalSuccess": "投资眼光精准，财富快速增长。"
+    },
+    "relationship-romance": {
+      "failure": "这段关系没有发展起来，你有些失落。",
+      "success": "你们的关系稳步升温，幸福感提升。",
+      "criticalSuccess": "一段美好的爱情降临，你感到前所未有的幸福。"
+    },
+    "relationship-marriage": {
+      "failure": "婚姻计划暂时搁置，你仍要继续寻找答案。",
+      "success": "婚姻带来了稳定与支持，幸福和影响都在提升。",
+      "criticalSuccess": "你找到了理想的伴侣，人生更加圆满。"
+    },
+    "relationship-family": {
+      "failure": "家庭责任压得你喘不过气，自由和幸福都受到影响。",
+      "success": "家庭成为你坚实的后盾，幸福和影响稳步提升。",
+      "criticalSuccess": "家庭关系非常融洽，你从中获得了巨大的力量。"
+    },
+    "relationship-home-car": {
+      "failure": "这次大宗消费让你背上经济压力，幸福也没有提升。",
+      "success": "生活品质得到提升，幸福感增加。",
+      "criticalSuccess": "这次置办非常划算，生活质量和幸福感都大幅提升。"
+    },
+    "relationship-friends": {
+      "failure": "朋友关系维护不善，你感到有些孤独。",
+      "success": "朋友圈子扩大，你获得了更多支持和快乐。",
+      "criticalSuccess": "你结识了一群志同道合的朋友，人生更加精彩。"
+    },
+    "relationship-parents": {
+      "failure": "照顾父母让你身心俱疲，幸福受到影响。",
+      "success": "你尽到了责任，内心感到踏实和幸福。",
+      "criticalSuccess": "你与父母的关系更加亲密，家庭纽带更加牢固。"
+    },
+    "relationship-children": {
+      "failure": "育儿压力超出预期，你的自由和幸福都受到影响。",
+      "success": "孩子的成长带来了满满的幸福和成就感。",
+      "criticalSuccess": "亲子关系非常融洽，你的影响力也大大提升。"
+    },
+    "self-create-work": {
+      "failure": "创作过程充满波折，你的精力被大量消耗。",
+      "success": "作品初步完成，创造力和经验都有所提升。",
+      "criticalSuccess": "创作获得了认可，你的创造力和影响力都大幅提升。"
+    },
+    "self-charity": {
+      "failure": "公益行动消耗了资源，但效果不如预期。",
+      "success": "你帮助了他人，也收获了幸福和影响力。",
+      "criticalSuccess": "你的善举产生了广泛影响，幸福感爆棚。"
+    },
+    "self-hobby": {
+      "failure": "爱好没有坚持下来，投入变成了沉没成本。",
+      "success": "爱好让生活更加充实，精力也有所恢复。",
+      "criticalSuccess": "你发现了自己的天赋，爱好带来了意想不到的幸福。"
+    },
+    "self-travel": {
+      "failure": "旅行中出现了意外开销和疲惫，没有达到预期。",
+      "success": "旅行开阔了眼界，自由和经验都有所增长。",
+      "criticalSuccess": "这次旅行彻底改变了你看待世界的方式。"
+    },
+    "self-fitness": {
+      "failure": "运动方式不当，反而让身体更加疲惫。",
+      "success": "健康状况有所改善，精力也更加充沛。",
+      "criticalSuccess": "你养成了极佳的运动习惯，健康大幅提升。"
+    },
+    "self-discovery": {
+      "failure": "自我探索让你更加迷茫，幸福暂时下降。",
+      "success": "你对自己有了更清晰的认识，自由感提升。",
+      "criticalSuccess": "你找到了真正热爱的人生方向。"
+    },
+    "self-rest": {
+      "failure": "休息并没有让你恢复，反而感到空虚。",
+      "success": "休息后精力有所恢复，你重新找到了节奏。",
+      "criticalSuccess": "这段休整让你焕然一新，精力大幅恢复。"
+    }
+  },
+  "fateFallbacks": {
+    "fate-industry-downturn": {
+      "title": "行业寒冬",
+      "subtitle": "已触发命运事件",
+      "description": "你所在的行业遭遇了整体下行，收入和心理都受到冲击。"
+    },
+    "fate-family-illness": {
+      "title": "家人生病",
+      "subtitle": "已触发命运事件",
+      "description": "家人突然生病，你不得不分出精力和金钱来照顾。"
+    },
+    "fate-major-mistake": {
+      "title": "重大失误",
+      "subtitle": "已触发命运事件",
+      "description": "一次关键决策失误让你付出了金钱和声誉的代价。"
+    },
+    "fate-layoff": {
+      "title": "公司裁员",
+      "subtitle": "已触发命运事件",
+      "description": "公司结构调整，你失去了原有的工作，但也因此获得了一些自由。"
+    },
+    "fate-lucky-break": {
+      "title": "意外机会",
+      "subtitle": "已触发命运事件",
+      "description": "一个意想不到的机会降临，你的财富和影响力都获得了提升。"
+    }
+  },
+  "statusFallbacks": {
+    "economic-crisis": {
+      "title": "经济危机",
+      "triggerReasonTemplate": "长期的经济压力让你进入了经济危机状态。",
+      "resultTemplate": "经济危机开始侵蚀你的幸福感和自由度。"
+    },
+    "professional-achievement": {
+      "title": "专业成就",
+      "triggerReasonTemplate": "你的认知能力得到了认可，获得了专业成就。",
+      "resultTemplate": "专业成就让你的影响力进一步提升。"
+    },
+    "social-status": {
+      "title": "社会地位",
+      "triggerReasonTemplate": "你的影响力达到了新的高度，获得了社会地位。",
+      "resultTemplate": "社会地位为你带来了额外的资源和机会。"
+    },
+    "health-crisis": {
+      "title": "健康危机",
+      "triggerReasonTemplate": "健康持续恶化，你进入了健康危机状态。",
+      "resultTemplate": "健康危机让你的身体更加脆弱。",
+      "deathTemplate": "你因健康持续恶化而离世。"
+    },
+    "energy-crisis": {
+      "title": "精力危机",
+      "triggerReasonTemplate": "精力长期透支，你进入了精力危机状态。",
+      "resultTemplate": "精力危机让你难以应对日常挑战。"
+    },
+    "life-crisis": {
+      "title": "生命危机",
+      "triggerReasonTemplate": "年龄、健康和精力的多重压力让你进入生命危机状态。",
+      "resultTemplate": "生命危机使你的生存风险大幅上升。",
+      "deathTemplate": "你在长期高风险状态中未能撑过这次危机。"
+    }
+  },
+  "reportFallback": {
+    "titleTemplate": "{nickname} 的人生报告",
+    "subtitleTemplate": "{age} 岁 · {endReasonLabel}",
+    "sections": {
+      "openingHeading": "开局画像",
+      "choicesHeading": "关键选择",
+      "choicesEmptyText": "你的人生还没有足够重大的选择。",
+      "fateHeading": "后续变故与代价",
+      "fateEmptyText": "你的人生相对平稳，没有经历重大变故。",
+      "endingHeading": "最终结局",
+      "finalStatsHeading": "最终属性摘要"
+    },
+    "endReasonLabels": {
+      "age-limit": "你走完了这一生",
+      "status-health-crisis": "你因健康持续恶化而离世",
+      "status-life-crisis": "你在长期高风险状态中未能撑过这次危机"
+    }
+  }
+}
