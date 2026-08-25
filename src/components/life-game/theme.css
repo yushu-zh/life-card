@@ -801,3 +801,76 @@ body,
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
 }
+
+/* ===== 重新开始入口 ===== */
+
+/* 左上角悬浮重开图标：圆形描边小按钮，悬浮于各游戏阶段之上 */
+.life-game__restart-icon {
+  position: fixed;
+  top: var(--space-md);
+  left: var(--space-md);
+  z-index: 200;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-panel);
+  color: var(--gold-primary);
+  border: 1px solid var(--border-active);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.life-game__restart-icon:hover {
+  background: var(--gold-faint);
+  color: var(--gold-bright);
+}
+
+.life-game__restart-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* 二次确认弹窗：半透明遮罩 + 居中卡片 */
+.life-game__confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: rgba(10, 12, 16, 0.82);
+}
+
+.life-game__confirm-dialog {
+  width: 100%;
+  max-width: 22rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-card);
+}
+
+.life-game__confirm-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gold-primary);
+  margin: 0 0 var(--space-sm);
+}
+
+.life-game__confirm-message {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-lg);
+  line-height: 1.7;
+}
+
+.life-game__confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}

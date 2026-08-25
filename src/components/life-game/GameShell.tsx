@@ -27,6 +27,7 @@ import { CreatePlayerScreen } from './CreatePlayerScreen.tsx';
 import { GameOverScreen } from './GameOverScreen.tsx';
 import { LifeReportScreen } from './LifeReportScreen.tsx';
 import { ResultFlowScreen } from './ResultFlowScreen.tsx';
+import { RestartControl } from './RestartControl.tsx';
 import { RollingOverlay } from './RollingOverlay.tsx';
 import { TurnOverviewScreen } from './TurnOverviewScreen.tsx';
 import './theme.css';
@@ -361,6 +362,14 @@ export function GameShell() {
 
   return (
     <main className="life-game">
+      {/* 左上角重开入口：仅在回合总览 / 结果流阶段展示（建档、掷骰、终局、报告及挂起操作时不显示） */}
+      {(uiState.phase === 'turn-overview' || uiState.phase === 'turn-resolution') &&
+        uiState.pending === null && (
+          <RestartControl
+            labels={presentation.labels.restartConfirm}
+            onConfirm={handleRestart}
+          />
+        )}
       {uiState.pending && uiState.phase !== 'rolling' && (
         <div className="life-game__rolling-overlay" role="status">
           <p className="life-game__rolling-text">{presentation.labels.common.loadingSessionText}</p>

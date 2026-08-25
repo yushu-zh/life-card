@@ -86,6 +86,15 @@ describe('loadPhase4PresentationConfig', () => {
     assert.strictEqual(typeof config.templates.reportOpening, 'string');
     assert.strictEqual(typeof config.templates.reportEnding, 'string');
   });
+
+  it('exposes the restart confirm labels', () => {
+    const config = loadPhase4PresentationConfig();
+
+    assert.strictEqual(typeof config.labels.restartConfirm.title, 'string');
+    assert.strictEqual(typeof config.labels.restartConfirm.message, 'string');
+    assert.strictEqual(typeof config.labels.restartConfirm.confirmAction, 'string');
+    assert.strictEqual(typeof config.labels.restartConfirm.cancelAction, 'string');
+  });
 });
 
 describe('validatePhase4PresentationConfig', () => {

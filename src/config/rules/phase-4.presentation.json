@@ -76,6 +76,12 @@
       "restartAction": "重新开始",
       "finalStatsHeading": "最终属性摘要"
     },
+    "restartConfirm": {
+      "title": "重新开始游戏",
+      "message": "确定要重新开始吗？当前进度将被清除。",
+      "confirmAction": "重新开始",
+      "cancelAction": "取消"
+    },
     "common": {
       "unknownLabel": "未知",
       "loadingSessionText": "正在加载当前对局…",

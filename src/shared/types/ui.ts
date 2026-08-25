@@ -87,6 +87,12 @@ export interface Phase4PresentationConfig {
       restartAction: string;
       finalStatsHeading: string;
     };
+    restartConfirm: {
+      title: string;
+      message: string;
+      confirmAction: string;
+      cancelAction: string;
+    };
     common: {
       unknownLabel: string;
       loadingSessionText: string;

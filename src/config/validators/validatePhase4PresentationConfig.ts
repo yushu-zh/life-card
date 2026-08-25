@@ -94,6 +94,9 @@ const REQUIRED_GAME_OVER_FIELDS = ['title', 'subtitle', 'reportAction'] as const
 // 报告页标签字段。
 const REQUIRED_REPORT_FIELDS = ['title', 'restartAction', 'finalStatsHeading'] as const;
 
+// 重新开始确认弹窗标签字段。
+const REQUIRED_RESTART_CONFIRM_FIELDS = ['title', 'message', 'confirmAction', 'cancelAction'] as const;
+
 // 公共标签字段。
 const REQUIRED_COMMON_FIELDS = ['unknownLabel', 'loadingSessionText', 'emptyText'] as const;
 
@@ -206,6 +209,7 @@ function validateLabels(value: unknown): Phase4PresentationConfig['labels'] {
   const resultFlow = validateResultFlowLabels(labels.resultFlow);
   const gameOver = validateGameOverLabels(labels.gameOver);
   const report = validateReportLabels(labels.report);
+  const restartConfirm = validateRestartConfirmLabels(labels.restartConfirm);
   const common = validateCommonLabels(labels.common);
 
   return {
@@ -216,6 +220,7 @@ function validateLabels(value: unknown): Phase4PresentationConfig['labels'] {
     resultFlow,
     gameOver,
     report,
+    restartConfirm,
     common
   };
 }
@@ -295,6 +300,17 @@ function validateReportLabels(value: unknown): Phase4PresentationConfig['labels'
   }
 
   return report as Phase4PresentationConfig['labels']['report'];
+}
+
+function validateRestartConfirmLabels(value: unknown): Phase4PresentationConfig['labels']['restartConfirm'] {
+  assertObject(value, 'labels.restartConfirm');
+  const restartConfirm = value as Record<string, unknown>;
+
+  for (const field of REQUIRED_RESTART_CONFIRM_FIELDS) {
+    assertString(restartConfirm[field], `labels.restartConfirm.${field}`);
+  }
+
+  return restartConfirm as Phase4PresentationConfig['labels']['restartConfirm'];
 }
 
 function validateCommonLabels(value: unknown): Phase4PresentationConfig['labels']['common'] {
