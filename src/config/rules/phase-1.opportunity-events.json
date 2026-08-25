@@ -591,6 +591,52 @@
         "criticalBonus": []
       },
       "onNonFailure": []
+    },
+    {
+      "id": "achievement-odd-job",
+      "name": "打工兼职",
+      "category": "achievement",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "none",
+        "abilityKeys": []
+      },
+      "effects": {
+        "reward": [],
+        "fixedCost": [
+          { "key": "money", "amount": 1 },
+          { "key": "energy", "amount": -1 }
+        ],
+        "risk": [],
+        "criticalBonus": []
+      },
+      "onNonFailure": []
+    },
+    {
+      "id": "achievement-frugality",
+      "name": "节省开支",
+      "category": "achievement",
+      "availability": {
+        "maxOccurrences": null,
+        "requiresLifeNodes": []
+      },
+      "check": {
+        "kind": "none",
+        "abilityKeys": []
+      },
+      "effects": {
+        "reward": [],
+        "fixedCost": [
+          { "key": "freedom", "amount": -1 },
+          { "key": "money", "amount": 1 }
+        ],
+        "risk": [],
+        "criticalBonus": []
+      },
+      "onNonFailure": []
     }
   ]
 }

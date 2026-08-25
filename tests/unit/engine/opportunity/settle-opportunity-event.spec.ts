@@ -103,6 +103,23 @@ describe('settleOpportunityEvent', () => {
     assert.equal(summary.updatedSnapshot.stats.outcomes.health, 3);
   });
 
+  it('applies fixed cost for direct income cards', () => {
+    const snapshot = createBaseSnapshot();
+    const config = loadOpportunityEventConfig();
+    const event = findEvent('achievement-odd-job');
+
+    const summary = settleOpportunityEvent(snapshot, event, {}, config);
+
+    assert.equal(summary.resolutionKind, 'direct');
+    assert.equal(summary.resultGrade, null);
+    assert.deepEqual(summary.appliedDeltas, [
+      { key: 'money', amount: 1 },
+      { key: 'energy', amount: -1 }
+    ]);
+    assert.equal(summary.updatedSnapshot.stats.resources.money, 6);
+    assert.equal(summary.updatedSnapshot.stats.resources.energy, 4);
+  });
+
   it('updates life nodes on non-failure and enforces prerequisites', () => {
     const config = loadOpportunityEventConfig();
     const romanceEvent = findEvent('relationship-romance');

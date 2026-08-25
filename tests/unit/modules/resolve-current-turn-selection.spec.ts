@@ -173,7 +173,7 @@ describe('resolveCurrentTurnSelection', () => {
       throw new Error('Expected persisted session before creating turn offer');
     }
 
-    persistedBeforeOffer.snapshot.stats.resources.money = 2;
+    persistedBeforeOffer.snapshot.stats.resources.money = 0;
     await store.saveGameSession(persistedBeforeOffer.snapshot);
 
     await getOrCreateCurrentTurnOffer(
@@ -189,7 +189,7 @@ describe('resolveCurrentTurnSelection', () => {
     const summary = await resolveCurrentTurnSelection(
       {
         sessionId: 'session-resolve-3',
-        slotIndex: 0
+        slotIndex: 1
       },
       {
         store,

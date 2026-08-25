@@ -1,0 +1,69 @@
+{
+  "defaultRunCount": 1000,
+  "comparisonBaseline": "random",
+  "enabledStrategies": [
+    "random",
+    "prefer-achievement",
+    "prefer-relationship",
+    "prefer-self",
+    "prefer-high-reward",
+    "prefer-low-risk"
+  ],
+  "playerPreset": {
+    "profile": {
+      "nickname": "模拟角色",
+      "skillTags": ["分析"],
+      "education": "本科",
+      "industry": "互联网",
+      "wishes": ["稳定"]
+    },
+    "abilities": {
+      "cognition": 2,
+      "execution": 2,
+      "social": 2,
+      "creativity": 1,
+      "adaptability": 1
+    }
+  },
+  "strategies": {
+    "random": {
+      "allowReroll": false,
+      "tieBreak": "random",
+      "finalTieBreak": "slot-order"
+    },
+    "prefer-achievement": {
+      "allowReroll": false,
+      "preferredCategories": ["achievement", "relationship", "self"],
+      "tieBreak": "success-positive-total",
+      "finalTieBreak": "slot-order"
+    },
+    "prefer-relationship": {
+      "allowReroll": false,
+      "preferredCategories": ["relationship", "achievement", "self"],
+      "tieBreak": "success-positive-total",
+      "finalTieBreak": "slot-order"
+    },
+    "prefer-self": {
+      "allowReroll": false,
+      "preferredCategories": ["self", "relationship", "achievement"],
+      "tieBreak": "success-positive-total",
+      "finalTieBreak": "slot-order"
+    },
+    "prefer-high-reward": {
+      "allowReroll": false,
+      "tieBreak": "success-positive-total",
+      "categoryTieBreakOrder": ["achievement", "relationship", "self"],
+      "finalTieBreak": "slot-order"
+    },
+    "prefer-low-risk": {
+      "allowReroll": false,
+      "tieBreak": "failure-negative-total",
+      "categoryTieBreakOrder": ["achievement", "relationship", "self"],
+      "finalTieBreak": "slot-order"
+    }
+  },
+  "metrics": {
+    "includeInvalidGames": true,
+    "includeStatusRates": true
+  }
+}

@@ -2,6 +2,7 @@ import { loadOpportunityEventConfig } from '../../config/loaders/loadOpportunity
 import { loadTurnSystemConfig } from '../../config/loaders/loadTurnSystemConfig.ts';
 import { resolveFateEvent } from '../../engine/fate/resolveFateEvent.ts';
 import { buildTurnHistoryEntry } from '../../engine/history/buildTurnHistoryEntry.ts';
+import { isOpportunitySelectable } from '../../engine/opportunity/checkOpportunityAvailability.ts';
 import { settleOpportunityEvent } from '../../engine/opportunity/settleOpportunityEvent.ts';
 import { advanceTurnProgression } from '../../engine/progression/advanceTurnProgression.ts';
 import { resolveTurnStatuses } from '../../engine/status/resolveTurnStatuses.ts';
@@ -59,6 +60,11 @@ export async function resolveCurrentTurnSelection(
 
   if (!eventDefinition) {
     throw new Error(`Opportunity event ${selectedCard.eventId} was not found`);
+  }
+
+  // 规则3/8：金钱不足或精力过低时，拒绝结算这张牌（权威门槛）。
+  if (!isOpportunitySelectable(persistedSession.snapshot, eventDefinition, turnSystemConfig.energyRules)) {
+    throw new Error(`Opportunity event ${selectedCard.eventId} cannot be selected with the current resources`);
   }
 
   const dice = eventDefinition.check.kind === 'sum' ? (options?.rollDice ?? createRollDice(options?.random))() : undefined;

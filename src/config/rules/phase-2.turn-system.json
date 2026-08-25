@@ -3,6 +3,15 @@
   "endAgeExclusive": 80,
   "redrawLimitPerTurn": 1,
   "categoryTieBreakOrder": ["achievement", "relationship", "self"],
+  "energyRules": {
+    "restCardId": "self-rest",
+    "forceRestMaxEnergy": 0,
+    "blockSelectionBelowEnergy": -5
+  },
+  "moneyRules": {
+    "incomeCardIds": ["achievement-odd-job", "achievement-frugality"],
+    "forceIncomeMaxMoney": 0
+  },
   "stageRules": [
     {
       "minAge": 20,
@@ -77,7 +86,7 @@
       "id": "economic-crisis",
       "name": "经济危机",
       "resolutionMode": "once-per-game",
-      "moneyMax": 2,
+      "moneyMax": 0,
       "effects": [
         { "key": "happiness", "amount": -1 },
         { "key": "freedom", "amount": -1 }
@@ -111,9 +120,11 @@
     "energyCrisis": {
       "id": "energy-crisis",
       "name": "精力危机",
-      "resolutionMode": "per-turn-risk-check",
-      "energyMax": -1,
-      "probabilityPerNegativePoint": 0.01
+      "resolutionMode": "per-turn-effect",
+      "energyMax": -3,
+      "effects": [
+        { "key": "health", "amount": -1 }
+      ]
     },
     "lifeCrisis": {
       "id": "life-crisis",

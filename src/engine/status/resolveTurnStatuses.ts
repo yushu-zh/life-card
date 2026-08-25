@@ -7,6 +7,7 @@ import type {
   HealthCrisisConfig,
   LifeCrisisConfig,
   OneTimeStatusResult,
+  PerTurnEffectStatusResult,
   ProfessionalAchievementConfig,
   SocialStatusConfig,
   StatusConditionSnapshot,
@@ -82,7 +83,7 @@ function resolveSingleStatus(
     case 'healthCrisis':
       return resolveHealthCrisis(snapshot, config.healthCrisis, random);
     case 'energyCrisis':
-      return resolveEnergyCrisis(snapshot, config.energyCrisis, random);
+      return resolveEnergyCrisis(snapshot, config.energyCrisis);
     case 'lifeCrisis':
       return resolveLifeCrisis(snapshot, config.lifeCrisis, random);
   }
@@ -195,38 +196,29 @@ function resolveHealthCrisis(
   };
 }
 
+// 精力危机：精力 <= 阈值时每回合健康-1，不再是死亡风险。
 function resolveEnergyCrisis(
   snapshot: GameSessionSnapshot,
-  config: EnergyCrisisConfig,
-  random: () => number
-): DeathRiskStatusResult | null {
+  config: EnergyCrisisConfig
+): PerTurnEffectStatusResult | null {
   const actualEnergy = snapshot.stats.resources.energy;
 
   if (actualEnergy > config.energyMax) {
     return null;
   }
 
-  const deathProbability = Math.abs(actualEnergy) * config.probabilityPerNegativePoint;
-  const roll = drawRandom(random);
-  const died = roll < deathProbability;
-  const endReason = died ? 'status-energy-crisis' : null;
+  const conditions = [buildCondition('energy', '<=', config.energyMax, actualEnergy)];
 
-  if (died) {
-    snapshot.lifecycle.isEnded = true;
-    snapshot.lifecycle.endReason = endReason;
-  }
+  applyStatDeltas(snapshot, config.effects);
 
   return {
     id: config.id,
     name: config.name,
-    kind: 'death-risk',
+    kind: 'per-turn-effect',
     resolutionMode: config.resolutionMode,
     firstTrigger: false,
-    conditions: [buildCondition('energy', '<=', config.energyMax, actualEnergy)],
-    deathProbability,
-    roll,
-    died,
-    endReason
+    conditions,
+    appliedDeltas: cloneStatDeltas(config.effects)
   };
 }
 

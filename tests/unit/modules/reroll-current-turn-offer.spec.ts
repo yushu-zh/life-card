@@ -59,6 +59,40 @@ describe('rerollCurrentTurnOffer', () => {
     assert.notDeepEqual(rerolled.currentOffer, first.currentOffer);
   });
 
+  it('reroll produces cards different from the initial offer', async () => {
+    const store = createGameSessionStore({ indexedDB: createInMemoryIndexedDB() });
+
+    await createNewGame(baseInput, {
+      sessionId: 'session-reroll-norepeat',
+      store
+    });
+
+    const first = await getOrCreateCurrentTurnOffer(
+      {
+        sessionId: 'session-reroll-norepeat'
+      },
+      {
+        store,
+        random: () => 0
+      }
+    );
+    const rerolled = await rerollCurrentTurnOffer(
+      {
+        sessionId: 'session-reroll-norepeat'
+      },
+      {
+        store,
+        random: () => 0.95
+      }
+    );
+
+    const initialIds = new Set(first.currentOffer.map((card) => card.eventId));
+
+    for (const card of rerolled.currentOffer) {
+      assert.equal(initialIds.has(card.eventId), false, `rerolled card ${card.eventId} should not repeat an initial card`);
+    }
+  });
+
   it('rejects a second reroll in the same turn', async () => {
     const store = createGameSessionStore({ indexedDB: createInMemoryIndexedDB() });
 

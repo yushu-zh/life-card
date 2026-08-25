@@ -17,8 +17,17 @@ describe('loadTurnSystemConfig', () => {
     assert.equal(config.fate.triggerProbability, 0.03);
     assert.equal(config.fate.events.length, 5);
     assert.equal(config.statuses.economicCrisis.id, 'economic-crisis');
+    assert.equal(config.statuses.economicCrisis.moneyMax, 0);
     assert.equal(config.statuses.healthCrisis.probabilityPerNegativePoint, 0.01);
+    assert.equal(config.statuses.energyCrisis.resolutionMode, 'per-turn-effect');
+    assert.equal(config.statuses.energyCrisis.energyMax, -3);
+    assert.deepEqual(config.statuses.energyCrisis.effects, [{ key: 'health', amount: -1 }]);
     assert.equal(config.statuses.lifeCrisis.deathProbability, 0.05);
+    assert.equal(config.energyRules.restCardId, 'self-rest');
+    assert.equal(config.energyRules.forceRestMaxEnergy, 0);
+    assert.equal(config.energyRules.blockSelectionBelowEnergy, -5);
+    assert.deepEqual(config.moneyRules.incomeCardIds, ['achievement-odd-job', 'achievement-frugality']);
+    assert.equal(config.moneyRules.forceIncomeMaxMoney, 0);
   });
 });
 
@@ -31,6 +40,15 @@ describe('validateTurnSystemConfig', () => {
           endAgeExclusive: 25,
           redrawLimitPerTurn: 1,
           categoryTieBreakOrder: ['achievement', 'relationship', 'self'],
+          energyRules: {
+            restCardId: 'self-rest',
+            forceRestMaxEnergy: 0,
+            blockSelectionBelowEnergy: -5
+          },
+          moneyRules: {
+            incomeCardIds: ['achievement-odd-job', 'achievement-frugality'],
+            forceIncomeMaxMoney: 0
+          },
           stageRules: [
             {
               minAge: 20,
@@ -82,9 +100,9 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-risk-check',
-              energyMax: -1,
-              probabilityPerNegativePoint: 0.01
+              resolutionMode: 'per-turn-effect',
+              energyMax: -3,
+              effects: [{ key: 'health', amount: -1 }]
             },
             lifeCrisis: {
               id: 'life-crisis',
@@ -109,6 +127,15 @@ describe('validateTurnSystemConfig', () => {
           endAgeExclusive: 30,
           redrawLimitPerTurn: 1,
           categoryTieBreakOrder: ['achievement', 'relationship', 'self'],
+          energyRules: {
+            restCardId: 'self-rest',
+            forceRestMaxEnergy: 0,
+            blockSelectionBelowEnergy: -5
+          },
+          moneyRules: {
+            incomeCardIds: ['achievement-odd-job', 'achievement-frugality'],
+            forceIncomeMaxMoney: 0
+          },
           stageRules: [
             {
               minAge: 20,
@@ -166,9 +193,9 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-risk-check',
-              energyMax: -1,
-              probabilityPerNegativePoint: 0.01
+              resolutionMode: 'per-turn-effect',
+              energyMax: -3,
+              effects: [{ key: 'health', amount: -1 }]
             },
             lifeCrisis: {
               id: 'life-crisis',
@@ -193,6 +220,15 @@ describe('validateTurnSystemConfig', () => {
           endAgeExclusive: 25,
           redrawLimitPerTurn: 1,
           categoryTieBreakOrder: ['achievement', 'relationship', 'self'],
+          energyRules: {
+            restCardId: 'self-rest',
+            forceRestMaxEnergy: 0,
+            blockSelectionBelowEnergy: -5
+          },
+          moneyRules: {
+            incomeCardIds: ['achievement-odd-job', 'achievement-frugality'],
+            forceIncomeMaxMoney: 0
+          },
           stageRules: [
             {
               minAge: 20,
@@ -238,9 +274,9 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-risk-check',
-              energyMax: -1,
-              probabilityPerNegativePoint: 0.01
+              resolutionMode: 'per-turn-effect',
+              energyMax: -3,
+              effects: [{ key: 'health', amount: -1 }]
             },
             lifeCrisis: {
               id: 'life-crisis',
@@ -265,6 +301,15 @@ describe('validateTurnSystemConfig', () => {
           endAgeExclusive: 25,
           redrawLimitPerTurn: 1,
           categoryTieBreakOrder: ['achievement', 'relationship', 'self'],
+          energyRules: {
+            restCardId: 'self-rest',
+            forceRestMaxEnergy: 0,
+            blockSelectionBelowEnergy: -5
+          },
+          moneyRules: {
+            incomeCardIds: ['achievement-odd-job', 'achievement-frugality'],
+            forceIncomeMaxMoney: 0
+          },
           stageRules: [
             {
               minAge: 20,
@@ -316,9 +361,9 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-risk-check',
-              energyMax: -1,
-              probabilityPerNegativePoint: 0.01
+              resolutionMode: 'per-turn-effect',
+              energyMax: -3,
+              effects: [{ key: 'health', amount: -1 }]
             },
             lifeCrisis: {
               id: 'life-crisis',
@@ -343,6 +388,15 @@ describe('validateTurnSystemConfig', () => {
           endAgeExclusive: 25,
           redrawLimitPerTurn: 1,
           categoryTieBreakOrder: ['achievement', 'relationship', 'self'],
+          energyRules: {
+            restCardId: 'self-rest',
+            forceRestMaxEnergy: 0,
+            blockSelectionBelowEnergy: -5
+          },
+          moneyRules: {
+            incomeCardIds: ['achievement-odd-job', 'achievement-frugality'],
+            forceIncomeMaxMoney: 0
+          },
           stageRules: [
             {
               minAge: 20,
@@ -394,9 +448,9 @@ describe('validateTurnSystemConfig', () => {
             energyCrisis: {
               id: 'energy-crisis',
               name: '精力危机',
-              resolutionMode: 'per-turn-risk-check',
-              energyMax: -1,
-              probabilityPerNegativePoint: 0.01
+              resolutionMode: 'per-turn-effect',
+              energyMax: -3,
+              effects: [{ key: 'health', amount: -1 }]
             },
             lifeCrisis: {
               id: 'life-crisis',

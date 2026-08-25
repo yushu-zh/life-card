@@ -38,9 +38,28 @@ export interface TurnSystemConfig {
   endAgeExclusive: number;
   redrawLimitPerTurn: number;
   categoryTieBreakOrder: OpportunityCategory[];
+  energyRules: EnergyRulesConfig;
+  moneyRules: MoneyRulesConfig;
   stageRules: TurnStageRule[];
   fate: FateConfig;
   statuses: StatusSystemConfig;
+}
+
+// 与精力相关的发牌/选择规则阈值。
+export interface EnergyRulesConfig {
+  // 精力 <= 该值时，强制刷出一张休养身心。
+  restCardId: string;
+  forceRestMaxEnergy: number;
+  // 精力 < 该值时，禁止选择消耗精力的事件。
+  blockSelectionBelowEnergy: number;
+}
+
+// 与金钱相关的发牌规则阈值。
+export interface MoneyRulesConfig {
+  // 金钱 <= 该值时，强制刷出一张能赚钱的兜底卡。
+  forceIncomeMaxMoney: number;
+  // 兜底赚钱卡的事件 id 池，随机刷出其中一张。
+  incomeCardIds: string[];
 }
 
 export interface TurnCategoryPlan {
@@ -78,8 +97,10 @@ export interface TurnHistoryEntry {
   };
   selectedCard: TurnOfferCard;
   discardedCards: TurnOfferCard[];
-  opportunity: OpportunityResolutionSummary;
-  fate: FateResolutionSummary | null;
+  // 历史条目只保留结算摘要的浅层事实，剥离完整快照：
+  // 否则每条历史会嵌套之前所有回合的快照，随回合数指数膨胀导致内存爆炸。
+  opportunity: Omit<OpportunityResolutionSummary, 'updatedSnapshot'>;
+  fate: Omit<FateResolutionSummary, 'updatedSnapshot'> | null;
   statuses: TurnStatusResult[];
   snapshotAfterTurn: {
     stats: GameSessionSnapshot['stats'];

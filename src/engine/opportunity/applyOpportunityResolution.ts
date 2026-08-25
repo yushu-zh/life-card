@@ -15,7 +15,9 @@ export function buildAppliedDeltas(
   resultGrade: OpportunityResultGrade | null
 ): StatDelta[] {
   if (resultGrade === null) {
-    return combineStatDeltas(eventDefinition.effects.reward);
+    // 无需检定的事件：直接应用激励 + 固定代价。
+    // 固定代价里允许放正负混合效果（例如金钱兜底卡「打工兼职」的金钱+1 精力-1）。
+    return combineStatDeltas([...eventDefinition.effects.reward, ...eventDefinition.effects.fixedCost]);
   }
 
   if (resultGrade === 'criticalSuccess') {

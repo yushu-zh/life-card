@@ -10,10 +10,10 @@ import type {
   StatusResolutionMode,
   StatusSystemConfig
 } from '../../shared/types/status.ts';
-import type { TurnRuleName, TurnStageRule, TurnSystemConfig } from '../../shared/types/turn.ts';
+import type { EnergyRulesConfig, MoneyRulesConfig, TurnRuleName, TurnStageRule, TurnSystemConfig } from '../../shared/types/turn.ts';
 import { isIntegerInRange, isNonNegativeInteger } from '../../shared/utils/validation.ts';
 
-const STATUS_RESOLUTION_MODE_VALUES = ['once-per-game', 'per-turn-risk-check'] as const satisfies StatusResolutionMode[];
+const STATUS_RESOLUTION_MODE_VALUES = ['once-per-game', 'per-turn-risk-check', 'per-turn-effect'] as const satisfies StatusResolutionMode[];
 
 const CATEGORY_VALUES = ['achievement', 'relationship', 'self'] as const satisfies OpportunityCategory[];
 const TURN_RULE_VALUES = ['balanced', 'weighted-by-pick-counts'] as const satisfies TurnRuleName[];
@@ -68,8 +68,18 @@ export function validateTurnSystemConfig(value: unknown): TurnSystemConfig {
     throw new Error('Turn system config field statuses must be an object');
   }
 
+  if (!config.energyRules || typeof config.energyRules !== 'object') {
+    throw new Error('Turn system config field energyRules must be an object');
+  }
+
+  if (!config.moneyRules || typeof config.moneyRules !== 'object') {
+    throw new Error('Turn system config field moneyRules must be an object');
+  }
+
   const cycleStartAges = validateCycleStartAges(config.cycleStartAges);
   const categoryTieBreakOrder = validateCategoryTieBreakOrder(config.categoryTieBreakOrder);
+  const energyRules = validateEnergyRules(config.energyRules as Record<string, unknown>);
+  const moneyRules = validateMoneyRules(config.moneyRules as Record<string, unknown>);
   const stageRules = (config.stageRules as unknown[]).map((stageRule, index) => validateStageRule(stageRule, index));
   const fate = validateFateConfig(config.fate as Record<string, unknown>);
   const statuses = validateStatusSystemConfig(config.statuses as Record<string, unknown>);
@@ -85,6 +95,8 @@ export function validateTurnSystemConfig(value: unknown): TurnSystemConfig {
     endAgeExclusive,
     redrawLimitPerTurn,
     categoryTieBreakOrder,
+    energyRules,
+    moneyRules,
     stageRules,
     fate,
     statuses
@@ -190,12 +202,43 @@ function validateEnergyCrisisConfig(value: unknown): EnergyCrisisConfig {
     resolutionMode: validateResolutionMode(
       config.resolutionMode,
       'Turn system statuses field energyCrisis resolutionMode',
-      'per-turn-risk-check'
+      'per-turn-effect'
     ),
     energyMax: validateIntegerField(config.energyMax, 'Turn system statuses field energyCrisis energyMax'),
-    probabilityPerNegativePoint: validateProbability(
-      config.probabilityPerNegativePoint,
-      'Turn system statuses field energyCrisis probabilityPerNegativePoint'
+    effects: validateStatusEffects(config.effects, 'Turn system statuses field energyCrisis effects')
+  };
+}
+
+// 校验与精力相关的发牌/选择规则阈值。
+function validateEnergyRules(value: Record<string, unknown>): EnergyRulesConfig {
+  return {
+    restCardId: validateNonEmptyId(value.restCardId, 'Turn system energyRules field restCardId'),
+    forceRestMaxEnergy: validateIntegerField(
+      value.forceRestMaxEnergy,
+      'Turn system energyRules field forceRestMaxEnergy'
+    ),
+    blockSelectionBelowEnergy: validateIntegerField(
+      value.blockSelectionBelowEnergy,
+      'Turn system energyRules field blockSelectionBelowEnergy'
+    )
+  };
+}
+
+// 校验与金钱相关的发牌规则阈值。
+function validateMoneyRules(value: Record<string, unknown>): MoneyRulesConfig {
+  if (!Array.isArray(value.incomeCardIds) || value.incomeCardIds.length === 0) {
+    throw new Error('Turn system moneyRules field incomeCardIds must be a non-empty array');
+  }
+
+  const incomeCardIds = value.incomeCardIds.map((id, index) =>
+    validateNonEmptyId(id, `Turn system moneyRules field incomeCardIds[${index}]`)
+  );
+
+  return {
+    incomeCardIds,
+    forceIncomeMaxMoney: validateIntegerField(
+      value.forceIncomeMaxMoney,
+      'Turn system moneyRules field forceIncomeMaxMoney'
     )
   };
 }
@@ -309,6 +352,10 @@ function validateStatusEffectsAreNonEmpty(statuses: StatusSystemConfig): void {
 
   if (statuses.socialStatus.effects.length === 0) {
     throw new Error('Turn system statuses field socialStatus effects must not be empty');
+  }
+
+  if (statuses.energyCrisis.effects.length === 0) {
+    throw new Error('Turn system statuses field energyCrisis effects must not be empty');
   }
 }
 

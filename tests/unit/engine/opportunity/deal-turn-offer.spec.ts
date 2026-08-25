@@ -112,4 +112,35 @@ describe('dealTurnOffer', () => {
 
     assert.equal(offer[0].eventId, 'relationship-home-car');
   });
+
+  it('deals two unique cards even for the same category', () => {
+    const snapshot = createBaseSnapshot();
+    const offer = dealTurnOffer(snapshot, ['self', 'self'], loadOpportunityEventConfig(), {
+      random: () => 0
+    });
+
+    assert.notEqual(offer[0].eventId, offer[1].eventId);
+  });
+
+  it('excludes the provided event ids', () => {
+    const snapshot = createBaseSnapshot();
+    const offer = dealTurnOffer(snapshot, ['self'], loadOpportunityEventConfig(), {
+      random: () => 0,
+      excludedEventIds: ['self-create-work']
+    });
+
+    assert.notEqual(offer[0].eventId, 'self-create-work');
+  });
+
+  it('forces the rest card when forcedEventIds is provided', () => {
+    const snapshot = createBaseSnapshot();
+    const offer = dealTurnOffer(snapshot, ['achievement', 'relationship', 'self'], loadOpportunityEventConfig(), {
+      random: () => 0,
+      forcedEventIds: ['self-rest']
+    });
+
+    const selfCard = offer.find((card) => card.category === 'self');
+
+    assert.equal(selfCard?.eventId, 'self-rest');
+  });
 });

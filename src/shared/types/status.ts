@@ -1,6 +1,6 @@
 import type { StatDelta } from './opportunity.ts';
 
-export type StatusResolutionMode = 'once-per-game' | 'per-turn-risk-check';
+export type StatusResolutionMode = 'once-per-game' | 'per-turn-risk-check' | 'per-turn-effect';
 export type StatusConditionKey = 'money' | 'cognition' | 'influence' | 'health' | 'energy' | 'age';
 
 // 一次性状态的公共配置。
@@ -39,9 +39,9 @@ export interface HealthCrisisConfig {
 export interface EnergyCrisisConfig {
   id: string;
   name: string;
-  resolutionMode: 'per-turn-risk-check';
+  resolutionMode: 'per-turn-effect';
   energyMax: number;
-  probabilityPerNegativePoint: number;
+  effects: StatDelta[];
 }
 
 // 生命危机的配置。
@@ -98,5 +98,16 @@ export interface DeathRiskStatusResult {
   endReason: string | null;
 }
 
+// 每回合反复生效的非死亡状态结算结果（例如精力危机健康-1）。
+export interface PerTurnEffectStatusResult {
+  id: string;
+  name: string;
+  kind: 'per-turn-effect';
+  resolutionMode: 'per-turn-effect';
+  firstTrigger: false;
+  conditions: StatusConditionSnapshot[];
+  appliedDeltas: StatDelta[];
+}
+
 // Phase 3 回合内可能产出的状态结果。
-export type StatusResult = OneTimeStatusResult | DeathRiskStatusResult;
+export type StatusResult = OneTimeStatusResult | DeathRiskStatusResult | PerTurnEffectStatusResult;

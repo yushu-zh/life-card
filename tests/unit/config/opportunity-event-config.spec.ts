@@ -12,13 +12,27 @@ describe('loadOpportunityEventConfig', () => {
     assert.equal(config.scoreBands.costlySuccess.min, 7);
     assert.equal(config.scoreBands.success.max, 11);
     assert.equal(config.scoreBands.criticalSuccess.min, 12);
-    assert.equal(config.events.length, 20);
+    assert.equal(config.events.length, 22);
 
     const startup = config.events.find((event) => event.id === 'achievement-startup');
     assert.deepEqual(startup?.check.abilityKeys, ['social', 'creativity']);
 
     const rest = config.events.find((event) => event.id === 'self-rest');
     assert.equal(rest?.check.kind, 'none');
+
+    const oddJob = config.events.find((event) => event.id === 'achievement-odd-job');
+    assert.equal(oddJob?.check.kind, 'none');
+    assert.deepEqual(oddJob?.effects.fixedCost, [
+      { key: 'money', amount: 1 },
+      { key: 'energy', amount: -1 }
+    ]);
+
+    const frugality = config.events.find((event) => event.id === 'achievement-frugality');
+    assert.equal(frugality?.check.kind, 'none');
+    assert.deepEqual(frugality?.effects.fixedCost, [
+      { key: 'freedom', amount: -1 },
+      { key: 'money', amount: 1 }
+    ]);
   });
 });
 

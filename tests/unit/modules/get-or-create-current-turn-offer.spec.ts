@@ -79,4 +79,38 @@ describe('getOrCreateCurrentTurnOffer', () => {
 
     assert.deepEqual(second, first);
   });
+
+  it('forces an income card when money is at or below zero', async () => {
+    const store = createGameSessionStore({ indexedDB: createInMemoryIndexedDB() });
+
+    await createNewGame(baseInput, {
+      sessionId: 'session-offer-income',
+      store
+    });
+
+    const persisted = await store.getGameSession('session-offer-income');
+
+    if (!persisted) {
+      throw new Error('Expected persisted session before forcing income');
+    }
+
+    persisted.snapshot.stats.resources.money = 0;
+    await store.saveGameSession(persisted.snapshot);
+
+    const activeTurn = await getOrCreateCurrentTurnOffer(
+      {
+        sessionId: 'session-offer-income'
+      },
+      {
+        store,
+        random: () => 0
+      }
+    );
+
+    const incomeCard = activeTurn.currentOffer.find((card) =>
+      ['achievement-odd-job', 'achievement-frugality'].includes(card.eventId)
+    );
+
+    assert.ok(incomeCard, 'money <= 0 should force an income card');
+  });
 });

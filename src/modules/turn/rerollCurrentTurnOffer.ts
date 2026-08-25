@@ -2,6 +2,7 @@ import { loadOpportunityEventConfig } from '../../config/loaders/loadOpportunity
 import { loadTurnSystemConfig } from '../../config/loaders/loadTurnSystemConfig.ts';
 import { dealTurnOffer } from '../../engine/opportunity/dealTurnOffer.ts';
 import { createGameSessionStore } from '../../storage/game-session/store.ts';
+import { buildForcedEventIds } from './buildForcedEventIds.ts';
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { ActiveTurnState } from '../../shared/types/turn.ts';
 
@@ -40,8 +41,24 @@ export async function rerollCurrentTurnOffer(
     throw new Error(`Game session ${input.sessionId} cannot reroll more than ${turnSystemConfig.redrawLimitPerTurn} time(s) in one turn`);
   }
 
-  const rerolledOffer = dealTurnOffer(persistedSession.snapshot, activeTurn.slotCategories, opportunityConfig, {
-    random: options?.random
+  const snapshot = persistedSession.snapshot;
+  const random = options?.random ?? Math.random;
+  // 规则2：换牌后的牌不与换牌前重复（兜底卡豁免不重复：休养身心 + 赚钱卡）。
+  const exemptIds = new Set([
+    turnSystemConfig.energyRules.restCardId,
+    ...turnSystemConfig.moneyRules.incomeCardIds
+  ]);
+  const excludedEventIds = activeTurn.initialOffer
+    .map((card) => card.eventId)
+    .filter((eventId) => !exemptIds.has(eventId));
+
+  // 资源不足时，换牌后仍强制刷出兜底卡。
+  const forcedEventIds = buildForcedEventIds(snapshot, opportunityConfig, turnSystemConfig, random);
+
+  const rerolledOffer = dealTurnOffer(snapshot, activeTurn.slotCategories, opportunityConfig, {
+    random,
+    excludedEventIds,
+    forcedEventIds
   });
   const nextActiveTurn: ActiveTurnState = {
     ...activeTurn,
