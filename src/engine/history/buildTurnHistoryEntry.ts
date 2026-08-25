@@ -37,8 +37,8 @@ export function buildTurnHistoryEntry(input: {
     },
     selectedCard: structuredClone(input.selectedCard),
     discardedCards: structuredClone(input.discardedCards),
-    opportunity: input.opportunity,
-    fate: input.fate,
+    opportunity: stripUpdatedSnapshot(input.opportunity),
+    fate: input.fate ? stripUpdatedSnapshot(input.fate) : null,
     statuses: structuredClone(input.statuses),
     snapshotAfterTurn: {
       stats: structuredClone(input.updatedSnapshot.stats),
@@ -48,4 +48,12 @@ export function buildTurnHistoryEntry(input: {
       ...input.progressionAfterTurn
     }
   };
+}
+
+// 从结算摘要里剥离完整快照，只保留浅层事实。
+// 历史条目不需要快照本身（终局状态由 snapshotAfterTurn 承载），保留它会让每条历史嵌套之前所有快照。
+function stripUpdatedSnapshot<T extends { updatedSnapshot: unknown }>(value: T): Omit<T, 'updatedSnapshot'> {
+  const { updatedSnapshot: _snapshot, ...rest } = value;
+
+  return rest;
 }

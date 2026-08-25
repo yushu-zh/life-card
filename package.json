@@ -5,6 +5,22 @@
   "type": "module",
   "scripts": {
     "test": "node --test --experimental-strip-types $(find tests -name '*.spec.ts' | sort)",
-    "test:unit": "node --test --experimental-strip-types $(find tests/unit -name '*.spec.ts' | sort)"
+    "test:unit": "node --test --experimental-strip-types $(find tests/unit -name '*.spec.ts' | sort)",
+    "simulate": "node --experimental-strip-types simulation/cli/runPhase5Simulation.ts",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
   }
 }

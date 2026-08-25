@@ -10,7 +10,11 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    // 显式引入 Node 类型：TypeScript 7 的 Bundler 解析下不再自动包含 @types/node，否则 process / fs 等报错
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   },
-  "include": ["src", "tests"]
+  "include": ["src", "tests", "simulation"]
 }
