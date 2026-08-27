@@ -56,6 +56,18 @@ const EMPTY_DRAFT: CreatePlayerInput = {
   }
 };
 
+// 各挂起动作的加载文案：加载期间复用骰子转动动画，按具体动作给出更贴切的标题与提示。
+const PENDING_COPY: Record<
+  NonNullable<Phase4UiState['pending']>,
+  { title: string; text: string }
+> = {
+  creating: { title: '正在创建人物…', text: '人生即将开始' },
+  'loading-turn': { title: '正在加载回合…', text: '命运正在排布' },
+  rerolling: { title: '正在换牌…', text: '重新洗牌中' },
+  resolving: { title: '正在结算回合…', text: '正在判定结果' },
+  'generating-report': { title: '正在生成人生报告…', text: 'AI 正在回顾你的一生' }
+};
+
 // 单页面游戏壳：负责阶段切换、调用 domain 入口、维护 UI 状态与当前快照。
 export function GameShell() {
   const presentation = useMemo(() => loadPhase4PresentationConfig(), []);
@@ -486,9 +498,10 @@ export function GameShell() {
           />
         )}
       {uiState.pending && uiState.phase !== 'rolling' && (
-        <div className="life-game__rolling-overlay" role="status">
-          <p className="life-game__rolling-text">{presentation.labels.common.loadingSessionText}</p>
-        </div>
+        <RollingOverlay
+          title={PENDING_COPY[uiState.pending].title}
+          loadingText={PENDING_COPY[uiState.pending].text}
+        />
       )}
       {renderContent()}
     </main>

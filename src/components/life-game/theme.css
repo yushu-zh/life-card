@@ -37,6 +37,14 @@
 
 * {
   box-sizing: border-box;
+  /* 隐藏所有元素的滚动条（侧边条）：移动端纵向滑动时不显示默认滚动指示条 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* 旧版 Edge / IE */
+}
+
+/* 隐藏 WebKit 内核（Safari / Chrome）的滚动条 */
+*::-webkit-scrollbar {
+  display: none;
 }
 
 html,
