@@ -11,6 +11,8 @@ import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { Dice2D6 } from '../../shared/types/opportunity.ts';
 import type { StatusSystemConfig } from '../../shared/types/status.ts';
 import type { ResolveTurnStatusesResult, TurnOfferCard, TurnResolutionSummary } from '../../shared/types/turn.ts';
+import { buildResultNarrativeFacts } from '../../ai/buildNarrativeFacts.ts';
+import type { EventCardNarrative, OpportunityResultNarrative, ResultNarrativeFacts, TurnNarrativeRecord } from '../../shared/types/narrative.ts';
 
 // 选择当前牌组中的一张牌，并把整回合结算到最终可持久化状态。
 export async function resolveCurrentTurnSelection(
@@ -27,6 +29,8 @@ export async function resolveCurrentTurnSelection(
       config: StatusSystemConfig,
       options?: { random?: () => number }
     ) => ResolveTurnStatusesResult;
+    generateResultNarrative?: (facts: ResultNarrativeFacts) => Promise<OpportunityResultNarrative | null>;
+    selectedCardNarrative?: EventCardNarrative | null;
   }
 ): Promise<TurnResolutionSummary> {
   const turnSystemConfig = loadTurnSystemConfig();
@@ -74,6 +78,28 @@ export async function resolveCurrentTurnSelection(
     { dice },
     opportunityConfig
   );
+  // 结算完成后，用规则已确定的结果生成 AI 结果文案（可选；未注入时为 null，UI 走 fallback）。
+  const resultGrade = opportunitySummary.resolutionKind === 'direct'
+    ? 'direct'
+    : (opportunitySummary.resultGrade ?? 'failure');
+  const resultNarrative = options?.generateResultNarrative
+    ? await options.generateResultNarrative(
+        buildResultNarrativeFacts(
+          persistedSession.snapshot,
+          eventDefinition,
+          resultGrade,
+          opportunitySummary.appliedDeltas,
+          // 把所选事件牌的描述传入，让结果文案与事件描述呼应。
+          options?.selectedCardNarrative?.description ?? ''
+        )
+      )
+    : null;
+  const selectedCardNarrative = options?.selectedCardNarrative ?? null;
+  // 没有任何 AI 叙事时保持 null，避免给无 AI 的模拟/历史写入空叙事记录。
+  const narrative: TurnNarrativeRecord | null =
+    resultNarrative || selectedCardNarrative
+      ? { card: selectedCardNarrative, result: resultNarrative }
+      : null;
   const fateSummary = resolveFateEvent(opportunitySummary.updatedSnapshot, turnSystemConfig.fate, {
     random: options?.random
   });
@@ -117,6 +143,7 @@ export async function resolveCurrentTurnSelection(
     updatedSnapshot: progressionResult.updatedSnapshot,
     progressionAfterTurn: progressionResult.progressionAfter
   });
+  historyEntry.narrative = narrative;
 
   progressionResult.updatedSnapshot.records.lifeHistory.push(historyEntry);
 
@@ -140,6 +167,7 @@ export async function resolveCurrentTurnSelection(
     fate: fateSummary.triggered ? fateSummary : null,
     statuses: structuredClone(statusResult.results),
     progressionAfterTurn: progressionResult.progressionAfter,
+    narrative,
     updatedSnapshot: progressionResult.updatedSnapshot
   };
 }

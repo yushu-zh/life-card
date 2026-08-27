@@ -210,4 +210,43 @@ describe('resolveCurrentTurnSelection', () => {
 
     assert.deepEqual(turnHistory.statuses, summary.statuses);
   });
+
+  it('attaches AI narrative to summary and history when injected', async () => {
+    const store = createGameSessionStore({ indexedDB: createInMemoryIndexedDB() });
+
+    await createNewGame(baseInput, {
+      sessionId: 'session-resolve-ai',
+      store
+    });
+
+    await getOrCreateCurrentTurnOffer(
+      { sessionId: 'session-resolve-ai' },
+      { store, random: () => 0 }
+    );
+
+    const summary = await resolveCurrentTurnSelection(
+      { sessionId: 'session-resolve-ai', slotIndex: 0 },
+      {
+        store,
+        random: () => 0.9,
+        rollDice: () => ({ first: 2, second: 3 }),
+        selectedCardNarrative: {
+          description: '一家AI公司向你发出邀请，你决定接受这份工作。'
+        },
+        generateResultNarrative: async () => ({
+          description: '你成功入职，收入提升，经验增长。'
+        })
+      }
+    );
+
+    assert.ok(summary.narrative);
+    assert.strictEqual(summary.narrative?.result?.description, '你成功入职，收入提升，经验增长。');
+    assert.strictEqual(summary.narrative?.card?.description, '一家AI公司向你发出邀请，你决定接受这份工作。');
+
+    const historyEntry = summary.updatedSnapshot.records.lifeHistory.at(-1);
+    assert.equal(historyEntry?.type, 'turn-resolution');
+    if (historyEntry?.type === 'turn-resolution') {
+      assert.deepEqual(historyEntry.narrative, summary.narrative);
+    }
+  });
 });

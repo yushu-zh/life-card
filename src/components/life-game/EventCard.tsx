@@ -13,6 +13,10 @@ export function EventCard({ card, onSelect }: EventCardProps) {
   if (card.isSelected) classNames.push('life-game__card--selected');
   if (card.isDisabled) classNames.push('life-game__card--disabled');
 
+  // AI 文案存在时，用一段描述替代默认短描述；标题始终用骨架事件名，不用 AI 生成。
+  const narrative = card.narrative;
+  const description = narrative?.description ?? card.shortDescription;
+
   return (
     <div
       className={classNames.join(' ')}
@@ -22,7 +26,7 @@ export function EventCard({ card, onSelect }: EventCardProps) {
       aria-disabled={card.isDisabled}
     >
       <h3 className="life-game__card-title">{card.title}</h3>
-      <p className="life-game__card-description">{card.shortDescription}</p>
+      <p className="life-game__card-description">{description}</p>
       <div className="life-game__card-check">{card.checkLabel}</div>
 
       <div className="life-game__card-hints">

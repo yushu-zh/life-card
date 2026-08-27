@@ -4,14 +4,17 @@ import { loadInitialStateConfig } from '../../config/loaders/loadInitialStateCon
 import { loadOpportunityEventConfig } from '../../config/loaders/loadOpportunityEventConfig.ts';
 import { loadPhase4PresentationConfig } from '../../config/loaders/loadPhase4PresentationConfig.ts';
 import { loadTurnSystemConfig } from '../../config/loaders/loadTurnSystemConfig.ts';
+import { loadAiConfig } from '../../config/loaders/loadAiConfig.ts';
 import { createNewGame } from '../../modules/bootstrap/createNewGame.ts';
 import { buildFallbackLifeReportViewModel } from '../../modules/report/buildFallbackLifeReportViewModel.ts';
 import { buildCreatePlayerViewModel } from '../../modules/setup/buildCreatePlayerViewModel.ts';
 import { getOrCreateCurrentTurnOffer } from '../../modules/turn/getOrCreateCurrentTurnOffer.ts';
 import { rerollCurrentTurnOffer } from '../../modules/turn/rerollCurrentTurnOffer.ts';
 import { resolveCurrentTurnSelection } from '../../modules/turn/resolveCurrentTurnSelection.ts';
+import { generateTurnCardNarratives } from '../../modules/turn/generateTurnCardNarratives.ts';
 import { buildTurnOverviewViewModel } from '../../modules/turn/buildTurnOverviewViewModel.ts';
 import { buildTurnResolutionFlowViewModel } from '../../modules/turn/buildTurnResolutionFlowViewModel.ts';
+import { createFridayTransport, generateEventCardNarrative, generateOpportunityResultNarrative } from '../../ai/narrativeService.ts';
 import { createGameSessionStore } from '../../storage/game-session/store.ts';
 import {
   clearCurrentSessionPointer,
@@ -22,6 +25,7 @@ import type { CreatePlayerInput } from '../../shared/types/bootstrap.ts';
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { Phase4UiState } from '../../shared/types/ui.ts';
 import type { TurnResolutionSummary } from '../../shared/types/turn.ts';
+import type { CardNarrativeFacts, EventCardNarrative, ResultNarrativeFacts } from '../../shared/types/narrative.ts';
 
 import { CreatePlayerScreen } from './CreatePlayerScreen.tsx';
 import { GameOverScreen } from './GameOverScreen.tsx';
@@ -67,6 +71,19 @@ export function GameShell() {
 
   const [currentSnapshot, setCurrentSnapshot] = useState<GameSessionSnapshot | null>(null);
   const [lastResolution, setLastResolution] = useState<TurnResolutionSummary | null>(null);
+
+  // Phase 6：AI 叙事服务与当前回合事件牌文案缓存。
+  const aiConfig = useMemo(() => loadAiConfig(), []);
+  const narrativeTransport = useMemo(() => createFridayTransport(aiConfig), [aiConfig]);
+  const generateCardNarrative = useCallback(
+    (facts: CardNarrativeFacts) => generateEventCardNarrative(facts, aiConfig, narrativeTransport),
+    [aiConfig, narrativeTransport]
+  );
+  const generateResultNarrative = useCallback(
+    (facts: ResultNarrativeFacts) => generateOpportunityResultNarrative(facts, aiConfig, narrativeTransport),
+    [aiConfig, narrativeTransport]
+  );
+  const [cardNarratives, setCardNarratives] = useState<Record<string, EventCardNarrative>>({});
 
   // 结果流 ViewModel 提为 memo，让“继续”推进逻辑也能拿到总段数。
   const resolutionFlowVm = useMemo(() => {
@@ -125,6 +142,13 @@ export function GameShell() {
       // 新快照没有 activeTurn，需要先调用发牌接口才能进入回合总览。
       await getOrCreateCurrentTurnOffer({ sessionId: snapshot.meta.sessionId });
 
+      // 发牌后异步生成三张牌的事件牌文案；失败时映射为空，UI 走 fallback。
+      const narratives = await generateTurnCardNarratives(
+        { sessionId: snapshot.meta.sessionId },
+        { generateCardNarrative }
+      );
+      setCardNarratives(narratives);
+
       const store = createGameSessionStore();
       const persisted = await store.getGameSession(snapshot.meta.sessionId);
       setCurrentSnapshot(persisted?.snapshot ?? snapshot);
@@ -140,7 +164,7 @@ export function GameShell() {
       // eslint-disable-next-line no-console
       console.error('创建游戏失败', error);
     }
-  }, [uiState.draft]);
+  }, [uiState.draft, generateCardNarrative]);
 
   // 换牌一次。
   const handleReroll = useCallback(async () => {
@@ -152,11 +176,18 @@ export function GameShell() {
       if (currentSnapshot) {
         setCurrentSnapshot({ ...currentSnapshot, turnState: { activeTurn } });
       }
+
+      const narratives = await generateTurnCardNarratives(
+        { sessionId: uiState.sessionId },
+        { generateCardNarrative }
+      );
+      setCardNarratives(narratives);
+
       setUiState((prev) => ({ ...prev, pending: null }));
     } catch {
       setUiState((prev) => ({ ...prev, pending: null }));
     }
-  }, [uiState.sessionId, currentSnapshot]);
+  }, [uiState.sessionId, currentSnapshot, generateCardNarrative]);
 
   // 选择卡牌。
   const handleSelectCard = useCallback(
@@ -165,10 +196,21 @@ export function GameShell() {
 
       setUiState((prev) => ({ ...prev, pending: 'resolving' }));
       try {
-        const summary = await resolveCurrentTurnSelection({
-          sessionId: uiState.sessionId,
-          slotIndex: slotIndex as 0 | 1 | 2
-        });
+        // 结算时透传 AI 结果文案能力，并把发牌阶段生成的选中牌文案一并带入（供历史持久化）。
+        const selectedCard = currentSnapshot?.turnState.activeTurn?.currentOffer.find(
+          (card) => card.slotIndex === (slotIndex as 0 | 1 | 2)
+        );
+        const selectedCardNarrative = selectedCard ? (cardNarratives[selectedCard.eventId] ?? null) : null;
+        const summary = await resolveCurrentTurnSelection(
+          {
+            sessionId: uiState.sessionId,
+            slotIndex: slotIndex as 0 | 1 | 2
+          },
+          {
+            generateResultNarrative,
+            selectedCardNarrative
+          }
+        );
 
         setLastResolution(summary);
         setCurrentSnapshot(summary.updatedSnapshot);
@@ -192,7 +234,7 @@ export function GameShell() {
         console.error('结算回合失败', error);
       }
     },
-    [uiState.sessionId]
+    [uiState.sessionId, currentSnapshot, cardNarratives, generateResultNarrative]
   );
 
   // 结果流下一步：先逐段推进结果流，全部看完后再进入下一回合。
@@ -217,6 +259,13 @@ export function GameShell() {
     setUiState((prev) => ({ ...prev, pending: 'loading-turn' }));
     try {
       await getOrCreateCurrentTurnOffer({ sessionId: uiState.sessionId });
+
+      const narratives = await generateTurnCardNarratives(
+        { sessionId: uiState.sessionId },
+        { generateCardNarrative }
+      );
+      setCardNarratives(narratives);
+
       const store = createGameSessionStore();
       const persisted = await store.getGameSession(uiState.sessionId);
 
@@ -235,7 +284,7 @@ export function GameShell() {
       // eslint-disable-next-line no-console
       console.error('进入下一回合失败', error);
     }
-  }, [uiState.sessionId, uiState.resolutionStepIndex, resolutionFlowVm]);
+  }, [uiState.sessionId, uiState.resolutionStepIndex, resolutionFlowVm, generateCardNarrative]);
 
   // 查看人生报告。
   const handleViewReport = useCallback(() => {
@@ -247,6 +296,7 @@ export function GameShell() {
     await clearCurrentSessionPointer();
     setCurrentSnapshot(null);
     setLastResolution(null);
+    setCardNarratives({});
     setUiState({
       phase: 'create-player',
       pending: null,
@@ -283,7 +333,8 @@ export function GameShell() {
         currentSnapshot.turnState.activeTurn,
         opportunityConfig,
         turnSystemConfig,
-        presentation
+        presentation,
+        cardNarratives
       );
 
       return (

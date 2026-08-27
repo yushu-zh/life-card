@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "style": "vivid",
+  "model": "deepseek-chat",
+  "baseUrl": "https://aigc.sankuai.com/v1/openai/native",
+  "timeoutMs": 8000,
+  "maxRetries": 1,
+  "cardPrompt": {
+    "system": "你是人生模拟游戏的叙事作者。你只根据给定的事件骨架和玩家背景，为这个事件写一段简短的场景描述，停在需要做出选择的时刻。你绝不能修改检定能力、激励、风险、固定代价、数值结果、成功等级或事件可出现规则。编造需要符合实际，编造符合年龄等的事件。只输出一个 JSON 对象，不要输出任何其他文本。",
+    "userTemplate": "玩家背景：{playerProfile}\n当前年龄：{age}岁（{stageLabel}，第{cycle}周期第{turn}回合）\n事件类别：{category}\n事件骨架：{eventSkeleton}\n{eventHint}请以第二人称「你」的口吻，为这个事件写一段 60-100 字左右的描述，要有故事感，用语简洁，不要滥用修辞：可以具体交代时间、地点、人物和起因，但要克制，不要堆砌与事件无关的细节。最后停在选择的那一刻，不要写最终决定，也不要千篇一律地写「要不要」。只输出一个 JSON 对象：{\"description\":\"一段事件描述\"}"
+  },
+  "resultPrompt": {
+    "system": "你是人生模拟游戏的叙事作者。你只根据已结算的事件结果生成一段结果描述，绝不能修改结果等级、属性变化或任何数值。只输出一个 JSON 对象，不要输出任何其他文本。",
+    "userTemplate": "玩家背景：{playerProfile}\n当前年龄：{age}岁\n事件：{eventName}\n事件描述：{cardDescription}\n结果等级：{gradeLabel}\n属性变化：{appliedDeltas}\n近期经历：{historySummary}\n\n请用一两句话写这个事件的结果，紧扣上面的「事件描述」，展现这个事件的结果。只输出一个 JSON 对象：{\"description\":\"一段结果描述\"}"
+  },
+  "eventHints": {}
+}

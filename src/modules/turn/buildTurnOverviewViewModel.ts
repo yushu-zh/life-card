@@ -2,6 +2,7 @@ import { isOpportunitySelectable } from '../../engine/opportunity/checkOpportuni
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { OpportunityEventConfig, OpportunityEventDefinition, StatKey } from '../../shared/types/opportunity.ts';
 import type { TurnSystemConfig } from '../../shared/types/turn.ts';
+import type { EventCardNarrative } from '../../shared/types/narrative.ts';
 import type {
   Phase4PresentationConfig,
   TurnCardViewModel,
@@ -17,7 +18,8 @@ export function buildTurnOverviewViewModel(
   activeTurn: GameSessionSnapshot['turnState']['activeTurn'],
   opportunityConfig: OpportunityEventConfig,
   turnSystemConfig: TurnSystemConfig,
-  presentation: Phase4PresentationConfig
+  presentation: Phase4PresentationConfig,
+  cardNarratives?: Record<string, EventCardNarrative>
 ): TurnOverviewViewModel {
   if (!activeTurn) {
     throw new Error('Active turn is required to build turn overview view model');
@@ -29,7 +31,7 @@ export function buildTurnOverviewViewModel(
   const stats = buildStats(snapshot, presentation);
   const riskHint = buildRiskHint(snapshot, turnSystemConfig, presentation);
   const cards = activeTurn.currentOffer.map((card) =>
-    buildCardViewModel(card, snapshot, opportunityConfig, turnSystemConfig.energyRules, presentation)
+    buildCardViewModel(card, snapshot, opportunityConfig, turnSystemConfig.energyRules, presentation, cardNarratives)
   );
 
   return {
@@ -164,7 +166,8 @@ function buildCardViewModel(
   snapshot: GameSessionSnapshot,
   opportunityConfig: OpportunityEventConfig,
   energyRules: TurnSystemConfig['energyRules'],
-  presentation: Phase4PresentationConfig
+  presentation: Phase4PresentationConfig,
+  cardNarratives?: Record<string, EventCardNarrative>
 ): TurnCardViewModel {
   const event = opportunityConfig.events.find((e) => e.id === card.eventId);
 
@@ -173,7 +176,8 @@ function buildCardViewModel(
   }
 
   const fallback = presentation.eventCardFallbacks[card.eventId];
-  const narrativeSource = fallback ? 'mock-curated' : 'template-fallback';
+  const aiNarrative = cardNarratives?.[card.eventId];
+  const narrativeSource = aiNarrative ? 'ai-generated' : (fallback ? 'mock-curated' : 'template-fallback');
 
   return {
     slotIndex: card.slotIndex as 0 | 1 | 2,
@@ -195,6 +199,7 @@ function buildCardViewModel(
         ? event.effects.risk.map((delta) => formatDelta(delta, presentation))
         : (fallback?.riskHints ?? []),
     narrativeSource,
+    narrative: aiNarrative ?? null,
     // 规则3/8：金钱不足或精力过低时，把这张牌置灰不可选。
     isDisabled: !isOpportunitySelectable(snapshot, event, energyRules),
     isSelected: false

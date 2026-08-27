@@ -3,11 +3,12 @@ import type { GameSessionSnapshot } from './game-session.ts';
 import type { OpportunityResultGrade, StatKey } from './opportunity.ts';
 import type { StatusConditionSnapshot, StatusResult } from './status.ts';
 import type { TurnOfferSlotIndex, TurnResolutionSummary } from './turn.ts';
+import type { EventCardNarrative } from './narrative.ts';
 
 export type ResourceKey = 'money' | 'energy';
 export type OutcomeKey = 'happiness' | 'freedom' | 'health' | 'experience' | 'influence';
 export type DisplayTone = 'normal' | 'positive' | 'warning' | 'danger' | 'muted';
-export type NarrativeSource = 'mock-curated' | 'template-fallback';
+export type NarrativeSource = 'ai-generated' | 'mock-curated' | 'template-fallback';
 
 export interface Phase4PresentationConfig {
   labels: {
@@ -261,6 +262,7 @@ export interface TurnCardViewModel {
   fixedCosts: string[];
   risks: string[];
   narrativeSource: NarrativeSource;
+  narrative?: EventCardNarrative | null;
   isDisabled: boolean;
   isSelected: boolean;
 }

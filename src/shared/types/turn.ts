@@ -2,6 +2,7 @@ import type { GameSessionSnapshot } from './game-session.ts';
 import type { FateConfig, FateResolutionSummary } from './fate.ts';
 import type { OpportunityCategory, OpportunityResolutionSummary } from './opportunity.ts';
 import type { StatusResult, StatusSystemConfig } from './status.ts';
+import type { TurnNarrativeRecord } from './narrative.ts';
 
 export type TurnPatternKind = 'balanced' | 'weighted-by-pick-counts';
 export type TurnRuleName = TurnPatternKind;
@@ -107,6 +108,7 @@ export interface TurnHistoryEntry {
     lifeNodes: GameSessionSnapshot['records']['lifeNodes'];
   };
   progressionAfterTurn: TurnProgressionAfter;
+  narrative?: TurnNarrativeRecord | null;
 }
 
 export interface TurnResolutionSummary {
@@ -128,4 +130,5 @@ export interface TurnResolutionSummary {
   statuses: TurnStatusResult[];
   progressionAfterTurn: TurnProgressionAfter;
   updatedSnapshot: GameSessionSnapshot;
+  narrative?: TurnNarrativeRecord | null;
 }

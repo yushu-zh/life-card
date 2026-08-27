@@ -58,17 +58,23 @@ function buildOpportunityStep(
     : (opportunity.resultGrade ?? 'failure');
 
   const fallback = presentation.opportunityResultFallbacks[opportunity.event.id];
-  const narrativeSource = fallback ? 'mock-curated' : 'template-fallback';
+  const aiResult = summary.narrative?.result;
+  const narrativeSource = aiResult ? 'ai-generated' : (fallback ? 'mock-curated' : 'template-fallback');
 
   const body: string[] = [];
-  const fallbackText = fallback?.[grade as keyof typeof fallback];
-  const templateText = presentation.templates.opportunityResult[grade];
+  if (aiResult) {
+    // AI 结果文案：一段展现事件结果、与事件描述呼应的文本。
+    body.push(aiResult.description);
+  } else {
+    const fallbackText = fallback?.[grade as keyof typeof fallback];
+    const templateText = presentation.templates.opportunityResult[grade];
 
-  body.push(
-    typeof fallbackText === 'string' && fallbackText.length > 0
-      ? fallbackText.replace('{eventName}', event?.name ?? opportunity.event.name)
-      : templateText.replace('{eventName}', event?.name ?? opportunity.event.name)
-  );
+    body.push(
+      typeof fallbackText === 'string' && fallbackText.length > 0
+        ? fallbackText.replace('{eventName}', event?.name ?? opportunity.event.name)
+        : templateText.replace('{eventName}', event?.name ?? opportunity.event.name)
+    );
+  }
 
   const eventName = event?.name ?? opportunity.event.name;
   // 等级展示统一带“结果：”前缀，对齐结果页参考图。
