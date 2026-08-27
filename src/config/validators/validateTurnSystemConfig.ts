@@ -275,7 +275,8 @@ function validateResolutionMode<T extends StatusResolutionMode>(
     throw new Error(`${label} must be ${expected}`);
   }
 
-  return value;
+  // 此时 value 已确认等于 expected，直接返回 expected 以保留精确字面量类型。
+  return expected;
 }
 
 function validateNonEmptyId(value: unknown, label: string): string {

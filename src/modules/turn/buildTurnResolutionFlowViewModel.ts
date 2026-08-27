@@ -183,7 +183,7 @@ function buildStatusStep(
     statusId: statusResult.id,
     title,
     body,
-    deltas: buildDeltaItems(statusResult.appliedDeltas ?? [], presentation),
+    deltas: buildDeltaItems('appliedDeltas' in statusResult ? statusResult.appliedDeltas : [], presentation),
     deltaHeading: labels.deltaHeading,
     conditions: statusResult.conditions ?? [],
     isTerminal: statusResult.kind === 'death-risk' && statusResult.died,

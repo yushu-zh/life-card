@@ -17,6 +17,8 @@ export interface Phase4PresentationConfig {
       subtitle: string;
       nickname: string;
       nicknamePlaceholder: string;
+      appId: string;
+      appIdPlaceholder: string;
       skillTags: string;
       skillTagsPlaceholder: string;
       skillTagsAction: string;
@@ -207,6 +209,8 @@ export interface UiRiskHint {
 export interface CreatePlayerFieldLabels {
   nickname: string;
   nicknamePlaceholder: string;
+  appId: string;
+  appIdPlaceholder: string;
   skillTags: string;
   skillTagsPlaceholder: string;
   skillTagsAction: string;
@@ -217,10 +221,12 @@ export interface CreatePlayerFieldLabels {
   wishes: string;
   wishesPlaceholder: string;
   wishesAction: string;
+  abilitiesTitle: string;
 }
 
 export interface CreatePlayerFieldErrors {
   nickname?: string;
+  appId?: string;
   skillTags?: string;
   wishes?: string;
   abilities?: string;
@@ -231,6 +237,7 @@ export interface CreatePlayerViewModel {
   subtitle: string;
   labels: CreatePlayerFieldLabels;
   draft: CreatePlayerInput;
+  appId: string;
   limits: {
     skillTagLimit: number;
     wishLimit: number;

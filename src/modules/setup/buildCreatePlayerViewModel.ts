@@ -10,6 +10,7 @@ const ABILITY_ORDER: AbilityKey[] = ['cognition', 'execution', 'social', 'creati
 // 组件只需要根据这些布尔值渲染，不用自己判断规则。
 export function buildCreatePlayerViewModel(
   draft: CreatePlayerInput,
+  appId: string,
   config: InitialStateConfig,
   presentation: Phase4PresentationConfig
 ): CreatePlayerViewModel {
@@ -17,8 +18,8 @@ export function buildCreatePlayerViewModel(
   const totalAllocated = sumNumbers(ABILITY_ORDER.map((key) => draft.abilities[key]));
   const remainingPoints = config.abilityPointTotal - totalAllocated;
 
-  const errors = collectFieldErrors(draft, config);
-  const disabledReason = buildDisabledReason(draft, config, remainingPoints, errors, presentation);
+  const errors = collectFieldErrors(draft, appId, config);
+  const disabledReason = buildDisabledReason(draft, appId, config, remainingPoints, errors, presentation);
 
   const abilityItems = ABILITY_ORDER.map((key) => {
     const value = draft.abilities[key];
@@ -40,6 +41,8 @@ export function buildCreatePlayerViewModel(
     labels: {
       nickname: labels.nickname,
       nicknamePlaceholder: labels.nicknamePlaceholder,
+      appId: labels.appId,
+      appIdPlaceholder: labels.appIdPlaceholder,
       skillTags: labels.skillTags,
       skillTagsPlaceholder: labels.skillTagsPlaceholder,
       skillTagsAction: labels.skillTagsAction,
@@ -49,9 +52,11 @@ export function buildCreatePlayerViewModel(
       industryPlaceholder: labels.industryPlaceholder,
       wishes: labels.wishes,
       wishesPlaceholder: labels.wishesPlaceholder,
-      wishesAction: labels.wishesAction
+      wishesAction: labels.wishesAction,
+      abilitiesTitle: labels.abilitiesTitle
     },
     draft,
+    appId,
     limits: {
       skillTagLimit: config.skillTagLimit,
       wishLimit: config.wishLimit,
@@ -73,12 +78,17 @@ export function buildCreatePlayerViewModel(
 // 收集表单字段级别的错误提示。
 function collectFieldErrors(
   draft: CreatePlayerInput,
+  appId: string,
   config: InitialStateConfig
 ): CreatePlayerViewModel['errors'] {
   const errors: CreatePlayerViewModel['errors'] = {};
 
   if (!draft.profile.nickname.trim()) {
     errors.nickname = '昵称不能为空';
+  }
+
+  if (!appId.trim()) {
+    errors.appId = 'App ID 不能为空';
   }
 
   if (draft.profile.skillTags.length > config.skillTagLimit) {
@@ -108,6 +118,7 @@ function collectFieldErrors(
 // 构造主按钮禁用原因；返回 null 表示可以开始。
 function buildDisabledReason(
   draft: CreatePlayerInput,
+  appId: string,
   config: InitialStateConfig,
   remainingPoints: number,
   errors: CreatePlayerViewModel['errors'],
@@ -115,6 +126,10 @@ function buildDisabledReason(
 ): string | null {
   if (!draft.profile.nickname.trim()) {
     return '请先填写昵称';
+  }
+
+  if (!appId.trim()) {
+    return '请先填写 App ID';
   }
 
   if (draft.profile.skillTags.length > config.skillTagLimit) {

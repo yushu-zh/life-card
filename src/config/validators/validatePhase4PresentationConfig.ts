@@ -1,4 +1,5 @@
-import type { Phase4PresentationConfig } from '../../shared/types/ui.ts';
+import type { AbilityKey } from '../../shared/types/bootstrap.ts';
+import type { OutcomeKey, Phase4PresentationConfig, ResourceKey } from '../../shared/types/ui.ts';
 
 // Phase 4 展示配置里必须存在的顶层字段。
 const REQUIRED_TOP_FIELDS = [
@@ -21,6 +22,8 @@ const REQUIRED_CREATE_PLAYER_FIELDS = [
   'subtitle',
   'nickname',
   'nicknamePlaceholder',
+  'appId',
+  'appIdPlaceholder',
   'skillTags',
   'skillTagsPlaceholder',
   'skillTagsAction',
@@ -354,7 +357,12 @@ function validateStatOrder(value: unknown): Phase4PresentationConfig['statOrder'
     }
   }
 
-  return { abilities, resources, outcomes };
+  // 校验已确认三个数组都包含全部必需键，这里收窄到具体键的联合类型。
+  return {
+    abilities: abilities as AbilityKey[],
+    resources: resources as ResourceKey[],
+    outcomes: outcomes as OutcomeKey[]
+  };
 }
 
 function validateStatLabels(value: unknown): Phase4PresentationConfig['statLabels'] {

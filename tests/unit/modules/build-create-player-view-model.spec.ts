@@ -11,6 +11,7 @@ import type { CreatePlayerInput } from '../../../src/shared/types/bootstrap.ts';
 describe('buildCreatePlayerViewModel', () => {
   const config = loadInitialStateConfig();
   const presentation = loadPhase4PresentationConfig();
+  const APP_ID = 'app-id-123';
 
   function buildValidDraft(): CreatePlayerInput {
     return {
@@ -32,7 +33,7 @@ describe('buildCreatePlayerViewModel', () => {
   }
 
   it('exposes the configured limits', () => {
-    const vm = buildCreatePlayerViewModel(buildValidDraft(), config, presentation);
+    const vm = buildCreatePlayerViewModel(buildValidDraft(), APP_ID, config, presentation);
 
     assert.strictEqual(vm.limits.skillTagLimit, config.skillTagLimit);
     assert.strictEqual(vm.limits.wishLimit, config.wishLimit);
@@ -48,7 +49,7 @@ describe('buildCreatePlayerViewModel', () => {
     draft.abilities.creativity = 1;
     draft.abilities.adaptability = 1;
 
-    const vm = buildCreatePlayerViewModel(draft, config, presentation);
+    const vm = buildCreatePlayerViewModel(draft, APP_ID, config, presentation);
 
     assert.strictEqual(vm.remainingPoints, 1);
     assert.ok(vm.abilityItems.every((item) => item.value === draft.abilities[item.key]));
@@ -59,7 +60,7 @@ describe('buildCreatePlayerViewModel', () => {
 
     // 当剩余点数用完时，即使未达单项上限也不能继续增加。
     const fullyAllocatedDraft = buildValidDraft();
-    const fullyAllocatedVm = buildCreatePlayerViewModel(fullyAllocatedDraft, config, presentation);
+    const fullyAllocatedVm = buildCreatePlayerViewModel(fullyAllocatedDraft, APP_ID, config, presentation);
     const fullyAllocatedCognition = fullyAllocatedVm.abilityItems.find(
       (item) => item.key === 'cognition'
     )!;
@@ -71,17 +72,27 @@ describe('buildCreatePlayerViewModel', () => {
     const draft = buildValidDraft();
     draft.profile.nickname = '';
 
-    const vm = buildCreatePlayerViewModel(draft, config, presentation);
+    const vm = buildCreatePlayerViewModel(draft, APP_ID, config, presentation);
 
     assert.strictEqual(vm.canStart, false);
     assert.ok(vm.disabledReason?.includes('昵称'));
+  });
+
+  it('disables start when app id is empty', () => {
+    const draft = buildValidDraft();
+
+    const vm = buildCreatePlayerViewModel(draft, '  ', config, presentation);
+
+    assert.strictEqual(vm.canStart, false);
+    assert.strictEqual(vm.errors.appId, 'App ID 不能为空');
+    assert.ok(vm.disabledReason?.includes('App ID'));
   });
 
   it('disables start when ability points are not fully allocated', () => {
     const draft = buildValidDraft();
     draft.abilities.cognition = 1;
 
-    const vm = buildCreatePlayerViewModel(draft, config, presentation);
+    const vm = buildCreatePlayerViewModel(draft, APP_ID, config, presentation);
 
     assert.strictEqual(vm.canStart, false);
     assert.ok(vm.disabledReason?.includes('点数'));
@@ -91,7 +102,7 @@ describe('buildCreatePlayerViewModel', () => {
     const draft = buildValidDraft();
     draft.profile.skillTags = ['a', 'b', 'c', 'd'];
 
-    const vm = buildCreatePlayerViewModel(draft, config, presentation);
+    const vm = buildCreatePlayerViewModel(draft, APP_ID, config, presentation);
 
     assert.strictEqual(vm.canStart, false);
   });

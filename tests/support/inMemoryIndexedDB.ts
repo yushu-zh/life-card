@@ -1,3 +1,5 @@
+import type { PersistedGameSession } from '../../src/shared/types/game-session.ts';
+
 export interface IndexedDBLike {
   open(name: string, version?: number): IndexedDBRequestLike<InMemoryDatabase>;
 }
@@ -27,22 +29,25 @@ class InMemoryObjectStore {
     this.storeState = storeState;
   }
 
-  put(value: Record<string, unknown>) {
+  put(value: object) {
     return createRequest<IDBValidKey>((request) => {
-      const key = value[this.storeState.keyPath];
+      const record = value as Record<string, unknown>;
+      const key = record[this.storeState.keyPath];
 
       if (typeof key !== 'string' || key.length === 0) {
         throw new Error(`Record key ${this.storeState.keyPath} must be a non-empty string`);
       }
 
-      this.storeState.records.set(key, structuredClone(value));
+      this.storeState.records.set(key, structuredClone(record));
       request.result = key;
     });
   }
 
   get(key: string) {
-    return createRequest<unknown | undefined>((request) => {
-      request.result = structuredClone(this.storeState.records.get(key));
+    return createRequest<PersistedGameSession | undefined>((request) => {
+      request.result = structuredClone(this.storeState.records.get(key)) as
+        | PersistedGameSession
+        | undefined;
     });
   }
 }

@@ -5,6 +5,8 @@
       "subtitle": "填满能力条，让你的角色更鲜明",
       "nickname": "昵称",
       "nicknamePlaceholder": "输入一个称呼",
+      "appId": "AI App ID",
+      "appIdPlaceholder": "输入 AI 服务的 App ID",
       "skillTags": "技能",
       "skillTagsPlaceholder": "例如：编程、写作、谈判",
       "skillTagsAction": "添加",

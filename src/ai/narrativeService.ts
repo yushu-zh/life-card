@@ -63,13 +63,12 @@ async function callWithRetry(
 }
 
 // 客户端直连 FRIDAY（OpenAI Chat Completions 兼容）。
-// App ID 通过 import.meta.env.VITE_FRIDAY_APP_ID 注入，不硬编码。
-export function createFridayTransport(config: AiConfig): NarrativeTransport {
+// App ID 由调用方传入（建档时用户输入并持久化），不再从环境变量读取。
+export function createFridayTransport(config: AiConfig, appId: string): NarrativeTransport {
   return {
     async generate(system: string, user: string): Promise<string> {
-      const appId = readFridayAppId();
       if (!appId) {
-        throw new Error('Missing VITE_FRIDAY_APP_ID');
+        throw new Error('Missing FRIDAY App ID');
       }
 
       const controller = new AbortController();
@@ -122,9 +121,3 @@ export function createMockNarrativeTransport(): NarrativeTransport {
   };
 }
 
-// 从 Vite 注入的环境变量读取 FRIDAY App ID。
-// 用显式断言访问 import.meta.env，避免额外引入 vite/client 类型。
-function readFridayAppId(): string | undefined {
-  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
-  return env?.VITE_FRIDAY_APP_ID;
-}

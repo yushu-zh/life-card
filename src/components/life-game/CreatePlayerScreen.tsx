@@ -4,12 +4,13 @@ import type { CreatePlayerViewModel } from '../../shared/types/ui.ts';
 interface CreatePlayerScreenProps {
   vm: CreatePlayerViewModel;
   onChange: (draft: CreatePlayerInput) => void;
+  onAppIdChange: (value: string) => void;
   onStart: () => void;
 }
 
-// 创建人物界面：单列布局，昵称 / 技能 / 学历 / 行业 / 愿望 + 能力分配面板 + 全宽开始按钮。
+// 创建人物界面：单列布局，App ID / 昵称 / 技能 / 学历 / 行业 / 愿望 + 能力分配面板 + 全宽开始按钮。
 // 视觉对齐 docs/ui/reference/创建人物界面.png。
-export function CreatePlayerScreen({ vm, onChange, onStart }: CreatePlayerScreenProps) {
+export function CreatePlayerScreen({ vm, onChange, onAppIdChange, onStart }: CreatePlayerScreenProps) {
   const { profile } = vm.draft;
 
   function updateProfile(updates: Partial<CreatePlayerInput['profile']>) {
@@ -67,6 +68,20 @@ export function CreatePlayerScreen({ vm, onChange, onStart }: CreatePlayerScreen
           onChange={(e) => updateProfile({ nickname: e.target.value })}
         />
         {vm.errors.nickname && <div className="life-game__form-error">{vm.errors.nickname}</div>}
+      </div>
+
+      <div className="life-game__form-group">
+        <label className="life-game__form-label" htmlFor="app-id">
+          {vm.labels.appId}
+        </label>
+        <input
+          id="app-id"
+          className="life-game__input"
+          placeholder={vm.labels.appIdPlaceholder}
+          value={vm.appId}
+          onChange={(e) => onAppIdChange(e.target.value)}
+        />
+        {vm.errors.appId && <div className="life-game__form-error">{vm.errors.appId}</div>}
       </div>
 
       <TagField

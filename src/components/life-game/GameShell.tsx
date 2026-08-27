@@ -21,6 +21,7 @@ import {
   loadCurrentSessionPointer,
   saveCurrentSessionPointer
 } from '../../storage/game-session/currentSessionPointer.ts';
+import { loadFridayAppId, saveFridayAppId } from '../../storage/friday-app-id.ts';
 import type { CreatePlayerInput } from '../../shared/types/bootstrap.ts';
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { Phase4UiState } from '../../shared/types/ui.ts';
@@ -72,9 +73,12 @@ export function GameShell() {
   const [currentSnapshot, setCurrentSnapshot] = useState<GameSessionSnapshot | null>(null);
   const [lastResolution, setLastResolution] = useState<TurnResolutionSummary | null>(null);
 
+  // FRIDAY App ID：建档时用户输入并持久化；挂载时从本地回填，重复创建无需再次输入。
+  const [appId, setAppId] = useState('');
+
   // Phase 6：AI 叙事服务与当前回合事件牌文案缓存。
   const aiConfig = useMemo(() => loadAiConfig(), []);
-  const narrativeTransport = useMemo(() => createFridayTransport(aiConfig), [aiConfig]);
+  const narrativeTransport = useMemo(() => createFridayTransport(aiConfig, appId), [aiConfig, appId]);
   const generateCardNarrative = useCallback(
     (facts: CardNarrativeFacts) => generateEventCardNarrative(facts, aiConfig, narrativeTransport),
     [aiConfig, narrativeTransport]
@@ -127,6 +131,11 @@ export function GameShell() {
     void restoreSession();
   }, []);
 
+  // 挂载时回填上次保存的 FRIDAY App ID，重复创建角色无需再次输入。
+  useEffect(() => {
+    void loadFridayAppId().then(setAppId);
+  }, []);
+
   // 更新建档草稿。
   const handleDraftChange = useCallback((draft: CreatePlayerInput) => {
     setUiState((prev) => ({ ...prev, draft }));
@@ -136,6 +145,9 @@ export function GameShell() {
   const handleStart = useCallback(async () => {
     setUiState((prev) => ({ ...prev, pending: 'creating' }));
     try {
+      // 先持久化 App ID，下次创建角色时自动回填。
+      await saveFridayAppId(appId);
+
       const snapshot = await createNewGame(uiState.draft);
       await saveCurrentSessionPointer({ sessionId: snapshot.meta.sessionId });
 
@@ -164,7 +176,7 @@ export function GameShell() {
       // eslint-disable-next-line no-console
       console.error('创建游戏失败', error);
     }
-  }, [uiState.draft, generateCardNarrative]);
+  }, [uiState.draft, appId, generateCardNarrative]);
 
   // 换牌一次。
   const handleReroll = useCallback(async () => {
@@ -309,11 +321,12 @@ export function GameShell() {
   // 根据当前阶段渲染内容。
   function renderContent() {
     if (uiState.phase === 'create-player') {
-      const vm = buildCreatePlayerViewModel(uiState.draft, initialConfig, presentation);
+      const vm = buildCreatePlayerViewModel(uiState.draft, appId, initialConfig, presentation);
       return (
         <CreatePlayerScreen
           vm={vm}
           onChange={handleDraftChange}
+          onAppIdChange={setAppId}
           onStart={handleStart}
         />
       );

@@ -1,9 +1,10 @@
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
+import type { StatKey } from '../../shared/types/opportunity.ts';
 import type { TurnHistoryEntry } from '../../shared/types/turn.ts';
-import type { LifeReportViewModel, Phase4PresentationConfig, UiStatItem } from '../../shared/types/ui.ts';
+import type { LifeReportViewModel, Phase4PresentationConfig } from '../../shared/types/ui.ts';
 
 // 能力、资源、结算键的统一顺序，用于报告最终属性摘要。
-const STAT_ORDER: Array<keyof LifeReportViewModel['finalStats'][number]['key']> = [
+const STAT_ORDER: StatKey[] = [
   'cognition',
   'execution',
   'social',
@@ -160,7 +161,7 @@ function buildEndingParagraphs(
 function buildFinalStats(
   snapshot: GameSessionSnapshot,
   presentation: Phase4PresentationConfig
-): UiStatItem[] {
+): LifeReportViewModel['finalStats'] {
   const { abilities, resources, outcomes } = snapshot.stats;
 
   const allStats: Record<string, number> = {

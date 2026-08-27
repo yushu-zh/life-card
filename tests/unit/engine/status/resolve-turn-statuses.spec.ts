@@ -6,6 +6,7 @@ import { loadTurnSystemConfig } from '../../../../src/config/loaders/loadTurnSys
 import { createInitialSnapshot } from '../../../../src/engine/session/createInitialSnapshot.ts';
 import { resolveTurnStatuses } from '../../../../src/engine/status/resolveTurnStatuses.ts';
 import type { CreatePlayerInput } from '../../../../src/shared/types/bootstrap.ts';
+import type { DeathRiskStatusResult } from '../../../../src/shared/types/status.ts';
 
 const baseInput: CreatePlayerInput = {
   profile: {
@@ -101,11 +102,15 @@ describe('resolveTurnStatuses', () => {
     });
 
     assert.equal(survived.results.length, 1);
-    assert.equal(survived.results[0]?.kind, 'death-risk');
-    assert.equal(survived.results[0]?.deathProbability, 0.02);
-    assert.equal(survived.results[0]?.died, false);
-    assert.equal(died.results[0]?.deathProbability, 0.02);
-    assert.equal(died.results[0]?.died, true);
+
+    const survivedResult = survived.results[0] as DeathRiskStatusResult | undefined;
+    const diedResult = died.results[0] as DeathRiskStatusResult | undefined;
+
+    assert.equal(survivedResult?.kind, 'death-risk');
+    assert.equal(survivedResult?.deathProbability, 0.02);
+    assert.equal(survivedResult?.died, false);
+    assert.equal(diedResult?.deathProbability, 0.02);
+    assert.equal(diedResult?.died, true);
     assert.equal(died.updatedSnapshot.lifecycle.endReason, 'status-health-crisis');
   });
 
