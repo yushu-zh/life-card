@@ -95,7 +95,7 @@ const REQUIRED_RESULT_FLOW_FIELDS = [
 const REQUIRED_GAME_OVER_FIELDS = ['title', 'subtitle', 'reportAction'] as const;
 
 // 报告页标签字段。
-const REQUIRED_REPORT_FIELDS = ['title', 'restartAction', 'finalStatsHeading'] as const;
+const REQUIRED_REPORT_FIELDS = ['title', 'restartAction', 'retryAction', 'exportAction', 'finalStatsHeading'] as const;
 
 // 重新开始确认弹窗标签字段。
 const REQUIRED_RESTART_CONFIRM_FIELDS = ['title', 'message', 'confirmAction', 'cancelAction'] as const;
@@ -139,7 +139,8 @@ const REQUIRED_REPORT_SECTION_FIELDS = [
   'fateHeading',
   'fateEmptyText',
   'endingHeading',
-  'finalStatsHeading'
+  'finalStatsHeading',
+  'aiSectionHeading'
 ] as const;
 
 // 确保值是非空对象。

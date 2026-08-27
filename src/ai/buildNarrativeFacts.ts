@@ -1,8 +1,9 @@
 import type { GameSessionSnapshot } from '../shared/types/game-session.ts';
-import type { OpportunityEventDefinition, OpportunityResultGrade, StatDelta } from '../shared/types/opportunity.ts';
+import type { OpportunityEventConfig, OpportunityEventDefinition, OpportunityResultGrade, StatDelta } from '../shared/types/opportunity.ts';
 import type { TurnSystemConfig } from '../shared/types/turn.ts';
-import type { CardNarrativeFacts, ResultNarrativeFacts } from '../shared/types/narrative.ts';
-import { formatGrade } from './buildNarrativePrompts.ts';
+import type { Phase4PresentationConfig } from '../shared/types/ui.ts';
+import type { CardNarrativeFacts, LifeReportFacts, ResultNarrativeFacts } from '../shared/types/narrative.ts';
+import { formatCategory, formatGrade } from './buildNarrativePrompts.ts';
 
 // 把快照 + 事件骨架收拢成事件牌文案的 prompt 事实。
 export function buildCardNarrativeFacts(
@@ -80,4 +81,139 @@ function resolveStageLabel(age: number, config: TurnSystemConfig): string {
   }
 
   return `${stage.minAge}-${stage.maxExclusive - 1}岁`;
+}
+
+// 把终局快照收拢成人生报告的 prompt 事实，覆盖 PRD 3.2 要求的最低事实集合。
+// 这里完成所有「结构化 -> 可读文本」的转换，让 prompt 组装层只做占位符拼接。
+export function buildLifeReportFacts(
+  snapshot: GameSessionSnapshot,
+  opportunityConfig: OpportunityEventConfig,
+  presentation: Phase4PresentationConfig
+): LifeReportFacts {
+  const { player, progression, lifecycle, records, stats } = snapshot;
+
+  const endReason = lifecycle.endReason ?? 'age-limit';
+  const endReasonLabel = presentation.reportFallback.endReasonLabels[endReason] ?? '人生已结束';
+
+  // 建立 eventId -> 事件名映射，供被放弃事件（历史里只有 eventId）还原可读名称。
+  const eventNameById = new Map(
+    opportunityConfig.events.map((event) => [event.id, event.name] as const)
+  );
+
+  const choices: LifeReportFacts['choices'] = [];
+  const discardedEvents: LifeReportFacts['discardedEvents'] = [];
+  const fateEvents: LifeReportFacts['fateEvents'] = [];
+  const statusEvents: LifeReportFacts['statusEvents'] = [];
+  const stageAges = new Set<number>();
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (const entry of records.lifeHistory) {
+    stageAges.add(entry.context.age);
+
+    // 成功/失败只统计明确的两种结果，代价成功不计入任一边。
+    const grade = entry.opportunity.resultGrade;
+    if (grade === 'success' || grade === 'criticalSuccess') {
+      successCount += 1;
+    } else if (grade === 'failure') {
+      failureCount += 1;
+    }
+
+    choices.push({
+      age: entry.context.age,
+      eventName: entry.opportunity.event.name,
+      categoryLabel: formatCategory(entry.opportunity.event.category),
+      gradeLabel: formatGrade(grade),
+      // 带上 Phase 6 生成的叙事文案，让报告能引用每一段选择的具象故事。
+      cardDescription: entry.narrative?.card?.description ?? null,
+      resultDescription: entry.narrative?.result?.description ?? null
+    });
+
+    // 被放弃的事件：本回合换牌掉 + 未选中的牌都算，保留时间脉络、不合并。
+    for (const card of entry.discardedCards) {
+      const name = eventNameById.get(card.eventId);
+      if (name) {
+        discardedEvents.push({ age: entry.context.age, eventName: name });
+      }
+    }
+
+    if (entry.fate?.triggered && entry.fate.event) {
+      fateEvents.push({ age: entry.context.age, eventName: entry.fate.event.name });
+    }
+
+    for (const status of entry.statuses) {
+      statusEvents.push({
+        age: entry.context.age,
+        statusName: status.name,
+        kind: status.kind,
+        died: status.kind === 'death-risk' ? status.died : false
+      });
+    }
+  }
+
+  const stageLabels = Array.from(stageAges)
+    .sort((a, b) => a - b)
+    .map((age) => `${age}岁`);
+
+  return {
+    player,
+    finalAge: progression.age,
+    endReason,
+    endReasonLabel,
+    isPrematureDeath: endReason !== 'age-limit',
+    stageLabels,
+    choices,
+    discardedEvents,
+    fateEvents,
+    statusEvents,
+    finalStats: buildReadableFinalStats(stats, presentation),
+    lifeNodes: buildReadableLifeNodes(records.lifeNodes),
+    categoryPickCounts: buildReadableCategoryPickCounts(records.categoryPickCounts),
+    successCount,
+    failureCount
+  };
+}
+
+// 把最终数值按展示顺序拼成「中文标签 + 数值」的可读列表，顺序来自展示配置。
+function buildReadableFinalStats(
+  stats: GameSessionSnapshot['stats'],
+  presentation: Phase4PresentationConfig
+): LifeReportFacts['finalStats'] {
+  return [
+    ...presentation.statOrder.abilities.map((key) => ({
+      label: presentation.statLabels[key],
+      value: stats.abilities[key]
+    })),
+    ...presentation.statOrder.resources.map((key) => ({
+      label: presentation.statLabels[key],
+      value: stats.resources[key]
+    })),
+    ...presentation.statOrder.outcomes.map((key) => ({
+      label: presentation.statLabels[key],
+      value: stats.outcomes[key]
+    }))
+  ];
+}
+
+// 把人生节点压成一句可读描述；空节点给一个兜底文案。
+function buildReadableLifeNodes(lifeNodes: GameSessionSnapshot['records']['lifeNodes']): string {
+  const parts: string[] = [];
+  if (lifeNodes.romanceSuccessCount > 0) {
+    parts.push(`恋爱${lifeNodes.romanceSuccessCount}次`);
+  }
+  if (lifeNodes.marriageEstablished) {
+    parts.push('已婚');
+  }
+  if (lifeNodes.familyEstablished) {
+    parts.push('已组建家庭');
+  }
+
+  return parts.length > 0 ? parts.join('、') : '暂无关键人生节点';
+}
+
+// 把三类事件累计压成一句可读描述，用于体现长期选择倾向。
+function buildReadableCategoryPickCounts(
+  counts: GameSessionSnapshot['records']['categoryPickCounts']
+): string {
+  return `成就机会${counts.achievement}次、关系机会${counts.relationship}次、自我机会${counts.self}次`;
 }

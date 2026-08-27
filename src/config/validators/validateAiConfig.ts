@@ -17,9 +17,12 @@ export function validateAiConfig(value: unknown): AiConfig {
   assertNonEmptyString(config.baseUrl, 'baseUrl');
   assertPositiveInteger(config.timeoutMs, 'timeoutMs');
   assertNonNegativeInteger(config.maxRetries, 'maxRetries');
+  assertPositiveInteger(config.maxTokens, 'maxTokens');
+  assertPositiveInteger(config.reportTimeoutMs, 'reportTimeoutMs');
 
   const cardPrompt = validatePrompt(config.cardPrompt, 'cardPrompt');
   const resultPrompt = validatePrompt(config.resultPrompt, 'resultPrompt');
+  const reportPrompt = validatePrompt(config.reportPrompt, 'reportPrompt');
   const eventHints = validateEventHints(config.eventHints);
 
   return {
@@ -29,8 +32,11 @@ export function validateAiConfig(value: unknown): AiConfig {
     baseUrl: config.baseUrl as string,
     timeoutMs: config.timeoutMs as number,
     maxRetries: config.maxRetries as number,
+    maxTokens: config.maxTokens as number,
+    reportTimeoutMs: config.reportTimeoutMs as number,
     cardPrompt,
     resultPrompt,
+    reportPrompt,
     eventHints
   };
 }

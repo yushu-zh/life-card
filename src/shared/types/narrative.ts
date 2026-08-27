@@ -48,6 +48,49 @@ export interface ResultNarrativeFacts {
   cardDescription: string;
 }
 
+// 人生报告叙事正文：AI 只输出一段由多个段落组成的报告正文，其余字段一律白名单剥离。
+export interface LifeReportNarrative {
+  paragraphs: string[];
+}
+
+// 组装人生报告 prompt 的结构化事实，覆盖 PRD 3.2 要求的最低事实集合。
+export interface LifeReportFacts {
+  player: CreatePlayerInput['profile'];
+  finalAge: number;
+  endReason: string;
+  endReasonLabel: string;
+  isPrematureDeath: boolean;
+  stageLabels: string[];
+  choices: Array<{
+    age: number;
+    eventName: string;
+    categoryLabel: string;
+    gradeLabel: string;
+    // AI 生成的事件牌文案与结果文案；无 AI 时为 null，报告仍可用事件名退化。
+    cardDescription: string | null;
+    resultDescription: string | null;
+  }>;
+  discardedEvents: Array<{
+    age: number;
+    eventName: string;
+  }>;
+  fateEvents: Array<{
+    age: number;
+    eventName: string;
+  }>;
+  statusEvents: Array<{
+    age: number;
+    statusName: string;
+    kind: 'one-time-effect' | 'death-risk' | 'per-cycle-effect';
+    died: boolean;
+  }>;
+  finalStats: Array<{ label: string; value: number }>;
+  lifeNodes: string;
+  categoryPickCounts: string;
+  successCount: number;
+  failureCount: number;
+}
+
 // 文本风格开关（PRD 3.7）。
 export type NarrativeStyle = 'concise' | 'vivid';
 
@@ -65,8 +108,13 @@ export interface AiConfig {
   baseUrl: string;
   timeoutMs: number;
   maxRetries: number;
+  // 输出 token 上限；报告要输出整篇文章，需要比事件卡大得多。
+  maxTokens: number;
+  // 报告专用超时：报告输入长、输出长，生成比事件卡慢，需要单独放宽。
+  reportTimeoutMs: number;
   cardPrompt: AiPromptConfig;
   resultPrompt: AiPromptConfig;
+  reportPrompt: AiPromptConfig;
   // 每个事件可选的范围提示词，键为 eventId，用于约束该事件的生成边界。
   eventHints: Record<string, string>;
 }

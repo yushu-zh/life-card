@@ -5,6 +5,8 @@
   "baseUrl": "https://aigc.sankuai.com/v1/openai/native",
   "timeoutMs": 8000,
   "maxRetries": 1,
+  "maxTokens": 4096,
+  "reportTimeoutMs": 60000,
   "cardPrompt": {
     "system": "你是人生模拟游戏的叙事作者。你只根据给定的事件骨架和玩家背景，为这个事件写一段简短的场景描述，停在需要做出选择的时刻。你绝不能修改检定能力、激励、风险、固定代价、数值结果、成功等级或事件可出现规则。编造需要符合实际，编造符合年龄等的事件。只输出一个 JSON 对象，不要输出任何其他文本。",
     "userTemplate": "玩家背景：{playerProfile}\n当前年龄：{age}岁（{stageLabel}，第{cycle}周期第{turn}回合）\n事件类别：{category}\n事件骨架：{eventSkeleton}\n{eventHint}请以第二人称「你」的口吻，为这个事件写一段 60-100 字左右的描述，要有故事感，用语简洁，不要滥用修辞：可以具体交代时间、地点、人物和起因，但要克制，不要堆砌与事件无关的细节。最后停在选择的那一刻，不要写最终决定，也不要千篇一律地写「要不要」。只输出一个 JSON 对象：{\"description\":\"一段事件描述\"}"
@@ -12,6 +14,10 @@
   "resultPrompt": {
     "system": "你是人生模拟游戏的叙事作者。你只根据已结算的事件结果生成一段结果描述，绝不能修改结果等级、属性变化或任何数值。只输出一个 JSON 对象，不要输出任何其他文本。",
     "userTemplate": "玩家背景：{playerProfile}\n当前年龄：{age}岁\n事件：{eventName}\n事件描述：{cardDescription}\n结果等级：{gradeLabel}\n属性变化：{appliedDeltas}\n近期经历：{historySummary}\n\n请用一两句话写这个事件的结果，紧扣上面的「事件描述」，展现这个事件的结果。只输出一个 JSON 对象：{\"description\":\"一段结果描述\"}"
+  },
+  "reportPrompt": {
+    "system": "你是人生模拟游戏的传记作者。你根据玩家一生的完整经历，用优美、有文学性的中文写一篇完整的人生文章。你要把零散的经历编织成连贯的人生故事，隐隐点出人生走向背后的因果——长期的选择如何累积成后来的境遇——但不能提及任何游戏规则、数值、属性、等级或概率。全文只讲人、事、选择与情感，最终给人留下关于选择与代价的思考。只输出一个 JSON 对象，不要输出任何其他文本。",
+    "userTemplate": "玩家背景：{playerProfile}\n最终年龄：{finalAge}岁\n结局：{endReasonLabel}\n\n一生的经历（每一条记录了你当时面对的选择，以及这件事后来的结果）：\n{choices}\n\n被放弃的选择：\n{discardedEvents}\n\n命运中的变故：\n{fateEvents}\n\n关键境遇：\n{statusEvents}\n\n人生节点：{lifeNodes}\n长期选择倾向：{categoryPickCounts}\n\n最终状态（仅供你理解人物走向，不要在文章中写出数值）：\n{finalStats}\n\n请以上述经历为素材，用第二人称「你」的口吻写一篇优美的人生文章，要求：\n1. 把零散的经历串成一条完整的人生轨迹，不要逐条罗列，而要像讲故事一样自然过渡；\n2. 对每一次重要选择，自然地写出它带来的后续影响，让读者感受到选择与代价之间的因果；\n3. 命运变故与关键境遇要自然融入叙事，尤其是结局「{endReasonLabel}」，要让人体会到人生如何一步步走到这里，而不是冷冰冰地宣告；\n4. 全文不要出现任何数字、属性名、等级、概率或规则术语，只用生活化的语言描述境遇；\n5. 结尾给人留下一点思考和回味。\n\n只输出一个 JSON 对象：{\"paragraphs\":[\"第一段\",\"第二段\",\"第三段\",\"...\"]}"
   },
   "eventHints": {}
 }

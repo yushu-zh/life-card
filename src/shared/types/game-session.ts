@@ -53,6 +53,8 @@ export interface GameSessionSnapshot {
     isEnded: boolean;
     endReason: string | null;
     finalReportId: string | null;
+    // 人生报告全文（段落以 \n\n 连接）；null 表示尚未生成，展示时走 fallback。
+    finalReportText: string | null;
   };
 }
 

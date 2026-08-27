@@ -68,6 +68,7 @@ describe('loadPhase4PresentationConfig', () => {
     assert.strictEqual(typeof sections.fateHeading, 'string');
     assert.strictEqual(typeof sections.endingHeading, 'string');
     assert.strictEqual(typeof sections.finalStatsHeading, 'string');
+    assert.strictEqual(typeof sections.aiSectionHeading, 'string');
   });
 
   it('exposes required template fallbacks', () => {

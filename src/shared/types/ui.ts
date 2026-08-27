@@ -88,6 +88,8 @@ export interface Phase4PresentationConfig {
     report: {
       title: string;
       restartAction: string;
+      retryAction: string;
+      exportAction: string;
       finalStatsHeading: string;
     };
     restartConfirm: {
@@ -188,6 +190,7 @@ export interface Phase4PresentationConfig {
       fateEmptyText: string;
       endingHeading: string;
       finalStatsHeading: string;
+      aiSectionHeading: string;
     };
     endReasonLabels: Record<string, string>;
   };
@@ -367,7 +370,7 @@ export interface LifeReportViewModel {
 
 export interface Phase4UiState {
   phase: 'create-player' | 'turn-overview' | 'rolling' | 'turn-resolution' | 'game-over' | 'life-report';
-  pending: null | 'creating' | 'loading-turn' | 'rerolling' | 'resolving';
+  pending: null | 'creating' | 'loading-turn' | 'rerolling' | 'resolving' | 'generating-report';
   resolutionStepIndex: number;
   draft: CreatePlayerInput;
   sessionId: string | null;

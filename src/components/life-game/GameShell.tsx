@@ -6,7 +6,8 @@ import { loadPhase4PresentationConfig } from '../../config/loaders/loadPhase4Pre
 import { loadTurnSystemConfig } from '../../config/loaders/loadTurnSystemConfig.ts';
 import { loadAiConfig } from '../../config/loaders/loadAiConfig.ts';
 import { createNewGame } from '../../modules/bootstrap/createNewGame.ts';
-import { buildFallbackLifeReportViewModel } from '../../modules/report/buildFallbackLifeReportViewModel.ts';
+import { buildLifeReportExportText, buildLifeReportViewModel } from '../../modules/report/buildLifeReportViewModel.ts';
+import { generateLifeReport } from '../../modules/report/generateLifeReport.ts';
 import { buildCreatePlayerViewModel } from '../../modules/setup/buildCreatePlayerViewModel.ts';
 import { getOrCreateCurrentTurnOffer } from '../../modules/turn/getOrCreateCurrentTurnOffer.ts';
 import { rerollCurrentTurnOffer } from '../../modules/turn/rerollCurrentTurnOffer.ts';
@@ -14,7 +15,7 @@ import { resolveCurrentTurnSelection } from '../../modules/turn/resolveCurrentTu
 import { generateTurnCardNarratives } from '../../modules/turn/generateTurnCardNarratives.ts';
 import { buildTurnOverviewViewModel } from '../../modules/turn/buildTurnOverviewViewModel.ts';
 import { buildTurnResolutionFlowViewModel } from '../../modules/turn/buildTurnResolutionFlowViewModel.ts';
-import { createFridayTransport, generateEventCardNarrative, generateOpportunityResultNarrative } from '../../ai/narrativeService.ts';
+import { createFridayTransport, generateEventCardNarrative, generateLifeReportNarrative, generateOpportunityResultNarrative } from '../../ai/narrativeService.ts';
 import { createGameSessionStore } from '../../storage/game-session/store.ts';
 import {
   clearCurrentSessionPointer,
@@ -26,7 +27,7 @@ import type { CreatePlayerInput } from '../../shared/types/bootstrap.ts';
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { Phase4UiState } from '../../shared/types/ui.ts';
 import type { TurnResolutionSummary } from '../../shared/types/turn.ts';
-import type { CardNarrativeFacts, EventCardNarrative, ResultNarrativeFacts } from '../../shared/types/narrative.ts';
+import type { CardNarrativeFacts, EventCardNarrative, LifeReportFacts, ResultNarrativeFacts } from '../../shared/types/narrative.ts';
 
 import { CreatePlayerScreen } from './CreatePlayerScreen.tsx';
 import { GameOverScreen } from './GameOverScreen.tsx';
@@ -85,6 +86,10 @@ export function GameShell() {
   );
   const generateResultNarrative = useCallback(
     (facts: ResultNarrativeFacts) => generateOpportunityResultNarrative(facts, aiConfig, narrativeTransport),
+    [aiConfig, narrativeTransport]
+  );
+  const generateReportNarrative = useCallback(
+    (facts: LifeReportFacts) => generateLifeReportNarrative(facts, aiConfig, narrativeTransport),
     [aiConfig, narrativeTransport]
   );
   const [cardNarratives, setCardNarratives] = useState<Record<string, EventCardNarrative>>({});
@@ -298,10 +303,52 @@ export function GameShell() {
     }
   }, [uiState.sessionId, uiState.resolutionStepIndex, resolutionFlowVm, generateCardNarrative]);
 
-  // 查看人生报告。
-  const handleViewReport = useCallback(() => {
-    setUiState((prev) => ({ ...prev, phase: 'life-report' }));
-  }, []);
+  // 生成并持久化人生报告；失败时保持快照不变，报告页继续走 fallback。
+  // force 为 true 时忽略幂等，允许对已生成的报告重新生成。
+  const runReportGeneration = useCallback(async (force?: boolean) => {
+    if (!uiState.sessionId) return;
+
+    try {
+      const snapshot = await generateLifeReport(
+        { sessionId: uiState.sessionId },
+        { generateReportNarrative, force }
+      );
+      setCurrentSnapshot(snapshot);
+    } catch {
+      // 生成/读档失败时保持当前快照不变，报告页继续走 fallback。
+    }
+  }, [uiState.sessionId, generateReportNarrative]);
+
+  // 查看人生报告：先按需生成并持久化报告，再进入报告页。
+  // 生成失败时仍进入报告页，展示 fallback 总结，结束页绝不为空。
+  const handleViewReport = useCallback(async () => {
+    if (!uiState.sessionId) return;
+
+    setUiState((prev) => ({ ...prev, pending: 'generating-report' }));
+    await runReportGeneration();
+    setUiState((prev) => ({ ...prev, phase: 'life-report', pending: null }));
+  }, [uiState.sessionId, runReportGeneration]);
+
+  // 重新生成报告：忽略幂等，强制重新请求 AI，成功后覆盖快照并刷新报告。
+  const handleRetryReport = useCallback(async () => {
+    setUiState((prev) => ({ ...prev, pending: 'generating-report' }));
+    await runReportGeneration(true);
+    setUiState((prev) => ({ ...prev, pending: null }));
+  }, [runReportGeneration]);
+
+  // 导出人生记录：把提供给 AI 的结构化事实落成一个纯文本文件。
+  const handleExportReport = useCallback(() => {
+    if (!currentSnapshot) return;
+
+    const text = buildLifeReportExportText(currentSnapshot, opportunityConfig, presentation);
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `人生记录-${currentSnapshot.player.nickname || '匿名'}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [currentSnapshot, opportunityConfig, presentation]);
 
   // 重新开始：清空指针并回到建档页。
   const handleRestart = useCallback(async () => {
@@ -411,12 +458,16 @@ export function GameShell() {
         );
       }
 
-      const vm = buildFallbackLifeReportViewModel(currentSnapshot, presentation);
+      const vm = buildLifeReportViewModel(currentSnapshot, presentation);
       return (
         <LifeReportScreen
           vm={vm}
           restartLabel={presentation.labels.report.restartAction}
+          retryLabel={presentation.labels.report.retryAction}
+          exportLabel={presentation.labels.report.exportAction}
           onRestart={handleRestart}
+          onRetry={handleRetryReport}
+          onExport={handleExportReport}
         />
       );
     }

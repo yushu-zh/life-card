@@ -67,7 +67,8 @@ export function createInitialSnapshot(
     lifecycle: {
       isEnded: false,
       endReason: null,
-      finalReportId: null
+      finalReportId: null,
+      finalReportText: null
     }
   };
 }

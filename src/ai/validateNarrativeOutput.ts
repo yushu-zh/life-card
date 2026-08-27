@@ -1,4 +1,4 @@
-import type { EventCardNarrative, OpportunityResultNarrative } from '../shared/types/narrative.ts';
+import type { EventCardNarrative, LifeReportNarrative, OpportunityResultNarrative } from '../shared/types/narrative.ts';
 
 // 解析并校验 AI 返回的事件牌文案。
 // 只读取白名单字段（一段描述），其余字段一律忽略；缺失、空或非法都返回 null，交由上层走 fallback。
@@ -81,4 +81,33 @@ function extractJsonObject(raw: string): string | null {
 // 读取非空字符串；空串或非字符串返回 null。
 function readString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
+}
+
+// 解析并校验 AI 返回的人生报告。只读取白名单字段 paragraphs（非空字符串数组），
+// 其余字段一律忽略；缺失、空数组或任一空段都返回 null，交由上层走 fallback。
+export function parseLifeReport(raw: string): LifeReportNarrative | null {
+  const value = parseObject(raw);
+  if (!value) {
+    return null;
+  }
+
+  const paragraphs = readParagraphs(value.paragraphs);
+  if (!paragraphs) {
+    return null;
+  }
+
+  return { paragraphs };
+}
+
+// 读取非空段落数组：只保留非空字符串段落，过滤后为空则返回 null。
+function readParagraphs(value: unknown): string[] | null {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const paragraphs = value.filter(
+    (item): item is string => typeof item === 'string' && item.trim().length > 0
+  ).map((item) => item.trim());
+
+  return paragraphs.length > 0 ? paragraphs : null;
 }

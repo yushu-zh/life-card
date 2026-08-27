@@ -76,6 +76,8 @@
     "report": {
       "title": "人生报告",
       "restartAction": "重新开始",
+      "retryAction": "重新生成",
+      "exportAction": "导出人生记录",
       "finalStatsHeading": "最终属性摘要"
     },
     "restartConfirm": {
@@ -408,7 +410,8 @@
       "fateHeading": "后续变故与代价",
       "fateEmptyText": "你的人生相对平稳，没有经历重大变故。",
       "endingHeading": "最终结局",
-      "finalStatsHeading": "最终属性摘要"
+      "finalStatsHeading": "最终属性摘要",
+      "aiSectionHeading": "人生回顾"
     },
     "endReasonLabels": {
       "age-limit": "你走完了这一生",

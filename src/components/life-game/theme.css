@@ -802,6 +802,14 @@ body,
   padding: var(--space-lg);
 }
 
+/* 报告页底部次要动作：重新生成 / 导出人生记录 */
+.life-game__report-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
 /* ===== 重新开始入口 ===== */
 
 /* 左上角悬浮重开图标：圆形描边小按钮，悬浮于各游戏阶段之上 */

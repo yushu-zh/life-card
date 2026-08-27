@@ -4,11 +4,25 @@ interface LifeReportScreenProps {
   vm: LifeReportViewModel;
   restartLabel: string;
   onRestart: () => void;
+  // 重新生成报告：始终提供，允许在 fallback 或已生成报告上重新请求 AI。
+  retryLabel: string;
+  onRetry: () => void;
+  // 导出人生记录。
+  exportLabel: string;
+  onExport: () => void;
 }
 
 // 人生报告页：文章式 fallback 排版，无 AI 时也能输出完整 sections；
-// 底部保留全宽“重新开始”主按钮。
-export function LifeReportScreen({ vm, restartLabel, onRestart }: LifeReportScreenProps) {
+// 底部保留「重新生成」「导出人生记录」「重新开始」三个动作。
+export function LifeReportScreen({
+  vm,
+  restartLabel,
+  retryLabel,
+  exportLabel,
+  onRestart,
+  onRetry,
+  onExport
+}: LifeReportScreenProps) {
   return (
     <div className="life-game__container">
       <header className="life-game__report-head">
@@ -40,6 +54,15 @@ export function LifeReportScreen({ vm, restartLabel, onRestart }: LifeReportScre
           </div>
         </div>
       </section>
+
+      <div className="life-game__report-actions">
+        <button className="life-game__secondary-button" onClick={onRetry}>
+          {retryLabel}
+        </button>
+        <button className="life-game__secondary-button" onClick={onExport}>
+          {exportLabel}
+        </button>
+      </div>
 
       <button className="life-game__primary-button life-game__cta" onClick={onRestart}>
         {restartLabel}
