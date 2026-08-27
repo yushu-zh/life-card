@@ -1,3 +1,6 @@
+/* 衬线标题字体（命运档案感）+ 无衬线正文，swap 保证不阻塞渲染 */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
+
 :root {
   /* 黑金叙事色板（对齐 docs/ui/reference 参考图） */
   --bg-primary: #0a0c10;
@@ -13,9 +16,12 @@
   --text-muted: #7d7769;
   --danger: #c95757;
   --warning: #d4a843;
-  --border-subtle: rgba(217, 168, 78, 0.12);
+  /* 常规描边改为中性发丝线，更轻更通透；金色只留给 hover / 选中 / 关键强调 */
+  --border-subtle: rgba(255, 255, 255, 0.06);
   --border-active: rgba(217, 168, 78, 0.55);
-  --shadow-card: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
+  /* 面板顶部细内高光：让深色面板有"厚卡纸"受光感 */
+  --inset-top-light: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 
   /* 间距 */
   --space-xs: 0.25rem;
@@ -25,14 +31,16 @@
   --space-xl: 2rem;
   --space-2xl: 3rem;
 
-  /* 圆角 */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
+  /* 圆角：全线收小，避免粗圆角带来的笨重感 */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
   --radius-pill: 999px;
 
   /* 字体 */
   --font-sans: Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+  /* 衬线展示字体：仅用于大标题 / 卡名 / 结果标题，克制使用 */
+  --font-serif: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
 }
 
 * {
@@ -57,6 +65,15 @@ body,
   color: var(--text-primary);
   font-family: var(--font-sans);
   line-height: 1.6;
+}
+
+/* 背景氛围：顶部极弱暖金径向光晕 + 底部轻微压暗，营造舞台感（参考掷骰界面）
+   仅作背景氛围，不抢内容；fixed 使光晕不随滚动位移 */
+body {
+  background-image:
+    radial-gradient(120% 55% at 50% -10%, rgba(217, 168, 78, 0.055), transparent 60%),
+    radial-gradient(110% 50% at 50% 115%, rgba(0, 0, 0, 0.4), transparent 70%);
+  background-attachment: fixed;
 }
 
 /* 移动端固定视口：禁止横向滑动与缩放，仅允许纵向滚动 */
@@ -95,8 +112,10 @@ body {
 /* ===== 通用标题 ===== */
 
 .life-game__title {
+  font-family: var(--font-serif);
   font-size: 1.375rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--text-primary);
   margin: 0;
 }
@@ -124,53 +143,65 @@ body {
 
 /* 金色小节标题（结果描述 / 本次变化 / 应变减免等） */
 .life-game__section-title {
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   color: var(--gold-primary);
   margin: 0 0 var(--space-sm);
 }
 
 /* ===== 按钮 ===== */
 
-/* 主按钮：实心金、深色字 */
+/* 主按钮：克制的金色强调——淡金微渐变底 + 细金描边 + 金字，轻薄锐利 */
 .life-game__primary-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-sm) var(--space-xl);
-  background: linear-gradient(180deg, var(--gold-bright), var(--gold-primary));
-  color: #191307;
-  border: none;
+  padding: var(--space-xs) var(--space-lg);
+  background: linear-gradient(180deg, rgba(217, 168, 78, 0.15), rgba(217, 168, 78, 0.07));
+  color: var(--gold-bright);
+  border: 1px solid var(--border-active);
   border-radius: var(--radius-md);
-  font-size: 1rem;
-  font-weight: 600;
+  /* 所有按钮统一字号字重：14px、常规体，不加粗 */
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 214, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .life-game__primary-button:hover:not(:disabled) {
-  opacity: 0.92;
+  background: linear-gradient(180deg, rgba(217, 168, 78, 0.22), rgba(217, 168, 78, 0.1));
+  border-color: var(--gold-primary);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 214, 0.08),
+    0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 .life-game__primary-button:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: translateY(0);
 }
 
 .life-game__primary-button:disabled {
-  background: var(--bg-panel-raised);
+  background: transparent;
+  border-color: var(--border-subtle);
   color: var(--text-muted);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
-/* 全宽主按钮（各页底部唯一推进动作） */
+/* 全宽主按钮（各页底部唯一推进动作）：压低高度，减轻视觉重量 */
 .life-game__cta {
   width: 100%;
-  padding: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   margin-top: var(--space-lg);
-  font-size: 1.0625rem;
 }
 
-/* 次级按钮：金边小胶囊（换牌、重开等轻量入口） */
+/* 次级按钮：细金描边小按钮（换牌、重开等轻量入口） */
 .life-game__secondary-button {
   display: inline-flex;
   align-items: center;
@@ -179,15 +210,19 @@ body {
   background: transparent;
   color: var(--gold-primary);
   border: 1px solid var(--border-active);
-  border-radius: var(--radius-pill);
-  font-size: 0.8125rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .life-game__secondary-button:hover:not(:disabled) {
   background: var(--gold-faint);
+  border-color: var(--gold-primary);
+  color: var(--gold-bright);
 }
 
 .life-game__secondary-button:disabled {
@@ -229,11 +264,16 @@ body {
   border-radius: var(--radius-md);
   font-size: 0.9375rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  /* 内凹阴影让输入框有"嵌入面板"的 depth */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .life-game__input:focus {
   border-color: var(--gold-primary);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.35),
+    0 0 0 2px var(--gold-faint);
 }
 
 .life-game__input::placeholder {
@@ -250,17 +290,25 @@ body {
   flex: 1;
 }
 
-/* 添加按钮：实心金小按钮 */
+/* 添加按钮：与主按钮同一样式（淡金微渐变 + 细金描边 + 金字） */
 .life-game__add-button {
-  padding: var(--space-sm) var(--space-lg);
-  background: linear-gradient(180deg, var(--gold-bright), var(--gold-primary));
-  color: #191307;
-  border: none;
+  padding: var(--space-xs) var(--space-md);
+  background: linear-gradient(180deg, rgba(217, 168, 78, 0.15), rgba(217, 168, 78, 0.07));
+  color: var(--gold-bright);
+  border: 1px solid var(--border-active);
   border-radius: var(--radius-md);
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 214, 0.06);
   white-space: nowrap;
   cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.life-game__add-button:hover {
+  background: linear-gradient(180deg, rgba(217, 168, 78, 0.22), rgba(217, 168, 78, 0.1));
+  border-color: var(--gold-primary);
 }
 
 .life-game__chip-row {
@@ -269,15 +317,15 @@ body {
   gap: var(--space-sm);
 }
 
-/* 标签：金边金字胶囊（参考创建人物图） */
+/* 标签：淡金底细边小胶囊（参考创建人物图），降低填充与描边浓度 */
 .life-game__chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-md);
-  background: var(--gold-faint);
+  background: rgba(217, 168, 78, 0.09);
   color: var(--gold-bright);
-  border: 1px solid var(--border-active);
+  border: 1px solid rgba(217, 168, 78, 0.32);
   border-radius: var(--radius-pill);
   font-size: 0.8125rem;
 }
@@ -311,7 +359,7 @@ body {
   justify-content: space-between;
   margin-bottom: var(--space-md);
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .life-game__ability-remaining {
@@ -350,7 +398,7 @@ body {
   min-width: 1.5rem;
   text-align: center;
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--gold-primary);
 }
 
@@ -370,11 +418,13 @@ body {
   border: 1px solid var(--border-active);
 }
 
+/* 加号步进按钮：与文字按钮同一质感——淡金微渐变 + 细金描边，不再实心 */
 .life-game__stepper-button--plus {
-  background: linear-gradient(180deg, var(--gold-bright), var(--gold-primary));
-  color: #191307;
-  border: none;
-  font-weight: 700;
+  background: linear-gradient(180deg, rgba(217, 168, 78, 0.15), rgba(217, 168, 78, 0.07));
+  color: var(--gold-bright);
+  border: 1px solid var(--border-active);
+  font-weight: 400;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 214, 0.06);
 }
 
 .life-game__stepper-button:disabled {
@@ -406,6 +456,13 @@ body {
   justify-self: end;
 }
 
+/* 换牌按钮：文案变短后同步收窄横向内边距，并使用衬线字体 */
+.life-game__turn-header-action .life-game__secondary-button {
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-serif);
+  letter-spacing: 0.02em;
+}
+
 /* 人生刻度带：端点年龄 + 细线 + 当前发光点（参考事件界面图） */
 .life-game__age-track {
   display: flex;
@@ -434,7 +491,7 @@ body {
   height: 0.75rem;
   border-radius: 50%;
   background: var(--gold-bright);
-  box-shadow: 0 0 8px 2px rgba(230, 188, 102, 0.55);
+  box-shadow: 0 0 8px 2px rgba(230, 188, 102, 0.4);
   transform: translate(-50%, -50%);
 }
 
@@ -484,7 +541,7 @@ body {
 
 .life-game__stats-value {
   font-size: 1.0625rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
@@ -509,9 +566,11 @@ body {
   margin-top: var(--space-sm);
 }
 
-/* 侧边分组标题：能力 / 资源 / 人生指标 */
+/* 侧边分组标题：能力 / 资源 / 人生指标；固定宽度 + 右侧留白，与数值区隔开 */
 .life-game__stat-heading {
   flex-shrink: 0;
+  min-width: 4rem;
+  margin-right: var(--space-md);
   font-size: 0.8125rem;
   color: var(--gold-dim);
 }
@@ -538,7 +597,7 @@ body {
 
 .life-game__stat-value {
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
@@ -564,27 +623,34 @@ body {
   }
 }
 
-/* 事件卡：绝对主视觉 */
+/* 事件卡：绝对主视觉；发丝描边 + 极浅受光渐变，轻盈通透 */
 .life-game__card {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
   padding: var(--space-lg);
-  background: var(--bg-panel);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0) 40%),
+    var(--bg-panel);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+  box-shadow: var(--inset-top-light);
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .life-game__card:hover {
   border-color: var(--border-active);
-  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+  box-shadow: var(--inset-top-light), var(--shadow-card);
 }
 
 .life-game__card--selected {
   border-color: var(--gold-primary);
-  box-shadow: 0 0 0 1px var(--gold-primary), var(--shadow-card);
+  box-shadow:
+    0 0 0 1px rgba(217, 168, 78, 0.4),
+    0 0 18px rgba(217, 168, 78, 0.08),
+    var(--shadow-card);
 }
 
 .life-game__card--disabled {
@@ -593,8 +659,10 @@ body {
 }
 
 .life-game__card-title {
+  font-family: var(--font-serif);
   font-size: 1.0625rem;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   color: var(--gold-primary);
   margin: 0;
 }
@@ -652,7 +720,7 @@ body {
 }
 
 .life-game__risk-hint-title {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
 }
@@ -676,8 +744,10 @@ body {
 }
 
 .life-game__rolling-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   color: var(--gold-primary);
   margin: 0;
 }
@@ -688,26 +758,47 @@ body {
   margin: 0;
 }
 
-/* 二十面骰：金色线框 + 发光，轻量翻转动画 */
-.life-game__d20 {
-  width: 6rem;
-  height: 6rem;
-  color: var(--gold-primary);
-  filter: drop-shadow(0 0 14px rgba(217, 168, 78, 0.45));
-  animation: d20-tumble 0.9s ease-in-out infinite alternate;
+/* 双骰容器：两颗骰子并排滚动 */
+.life-game__dice {
+  display: flex;
+  gap: var(--space-lg);
 }
 
-@keyframes d20-tumble {
-  from {
-    transform: rotate(-10deg) scale(0.96);
+/* 六面骰：金色线框 + 柔和发光，翻转带轻微弹跳，像真正被掷出 */
+.life-game__die {
+  width: 4.5rem;
+  height: 4.5rem;
+  color: var(--gold-primary);
+  filter: drop-shadow(0 0 12px rgba(217, 168, 78, 0.35));
+  animation: die-tumble 0.9s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+}
+
+/* 第二颗骰：反向、错拍滚动，两颗骰子节奏不同更真实 */
+.life-game__die--second {
+  animation-delay: 0.14s;
+  animation-direction: reverse;
+}
+
+@keyframes die-tumble {
+  0% {
+    transform: rotate(0deg) translateY(0);
   }
-  to {
-    transform: rotate(10deg) scale(1.04);
+  25% {
+    transform: rotate(90deg) translateY(-10px);
+  }
+  50% {
+    transform: rotate(180deg) translateY(0);
+  }
+  75% {
+    transform: rotate(270deg) translateY(-6px);
+  }
+  100% {
+    transform: rotate(360deg) translateY(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .life-game__d20 {
+  .life-game__die {
     animation: none;
   }
 }
@@ -732,15 +823,17 @@ body {
 }
 
 .life-game__result-title {
+  font-family: var(--font-serif);
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   color: var(--gold-primary);
   margin: 0;
 }
 
 .life-game__result-grade {
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--gold-primary);
   white-space: nowrap;
 }
@@ -817,7 +910,7 @@ body {
 }
 
 .life-game__delta-amount {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--gold-primary);
 }
 
@@ -854,8 +947,10 @@ body {
 }
 
 .life-game__report-heading {
+  font-family: var(--font-serif);
   font-size: 1.0625rem;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   color: var(--gold-primary);
   margin: 0 0 var(--space-sm);
 }
@@ -883,6 +978,554 @@ body {
   margin-top: var(--space-lg);
 }
 
+/* ===== 报告页标签切换（人生数据 / 人生报告） ===== */
+
+.life-game__report-tabs {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.life-game__report-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-xs);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  /* 与容器下边框重叠，让选中态下划线盖住分隔线 */
+  margin-bottom: -1px;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.life-game__report-tab:hover {
+  color: var(--text-secondary);
+}
+
+.life-game__report-tab--active,
+.life-game__report-tab--active:hover {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold-primary);
+}
+
+/* 标签上的呼吸点：AI 报告后台生成中的轻提示 */
+.life-game__report-tab-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--gold-primary);
+  animation: report-tab-dot-breathe 1.2s ease-in-out infinite;
+}
+
+@keyframes report-tab-dot-breathe {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-game__report-tab-dot {
+    animation: none;
+  }
+}
+
+/* 第二页生成中占位：居中静默等待，不遮挡第一页 */
+.life-game__report-generating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+}
+
+.life-game__report-generating-title {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  letter-spacing: 0.04em;
+  color: var(--gold-primary);
+  margin: 0;
+  animation: report-generating-breathe 1.6s ease-in-out infinite;
+}
+
+.life-game__report-generating-text {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@keyframes report-generating-breathe {
+  0%, 100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .life-game__report-generating-title {
+    animation: none;
+  }
+}
+
+/* ===== 报告第一页：人生数据面板 ===== */
+
+/* 头部：名字 + 年龄跨度 + 一生的关键计数 */
+.life-game__data-hero {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.life-game__data-hero-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-xs);
+}
+
+.life-game__data-hero-ages {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  letter-spacing: 0.12em;
+  color: var(--gold-primary);
+  margin: 0 0 var(--space-md);
+}
+
+.life-game__data-hero-ages-dash {
+  color: var(--gold-dim);
+}
+
+.life-game__data-hero-line {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-xs);
+}
+
+.life-game__data-hero-line--muted {
+  color: var(--text-muted);
+}
+
+/* 最终五维：淡金胶囊横向排布 */
+.life-game__data-hero-outcomes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
+.life-game__data-hero-outcome {
+  padding: var(--space-xs) var(--space-md);
+  background: rgba(217, 168, 78, 0.07);
+  border: 1px solid rgba(217, 168, 78, 0.22);
+  border-radius: var(--radius-pill);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.life-game__data-hero-outcome strong {
+  color: var(--gold-bright);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 「机会 vs 选择」对比表：类别名 + 出现占比条 + 选择占比条 */
+.life-game__data-balance-head,
+.life-game__data-balance-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 1fr;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.life-game__data-balance-head {
+  margin-bottom: var(--space-xs);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.life-game__data-balance-head span:first-child {
+  text-align: left;
+}
+
+.life-game__data-balance-row {
+  padding: var(--space-sm) 0;
+}
+
+.life-game__data-balance-row + .life-game__data-balance-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.life-game__data-balance-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.life-game__data-balance-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.life-game__data-balance-percent {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.life-game__data-balance-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.life-game__data-balance-fill {
+  display: block;
+  height: 100%;
+  background: var(--gold-primary);
+  border-radius: 2px;
+}
+
+/* 「出现」条用中性灰，与「选择」的彩色形成主次对比 */
+.life-game__data-balance-fill--muted {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* 模板洞察与数据描述：左侧金边的引述样式 */
+.life-game__data-insight,
+.life-game__data-quote {
+  margin: var(--space-md) 0 0;
+  padding: var(--space-sm) var(--space-md);
+  border-left: 2px solid var(--gold-dim);
+  background: rgba(217, 168, 78, 0.05);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.life-game__data-quote {
+  font-family: var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+/* 小节内的小标题（你最常错过的机会 / 成长发生阶段等） */
+.life-game__data-subheading {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--gold-dim);
+  margin: var(--space-lg) 0 var(--space-sm);
+}
+
+/* 图表上方的说明性小字 */
+.life-game__data-caption {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: calc(-1 * var(--space-xs)) 0 var(--space-sm);
+}
+
+/* 擦肩而过：总数与分类计数 */
+.life-game__data-unchosen-total {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-sm);
+}
+
+.life-game__data-unchosen-total strong {
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+  color: var(--gold-bright);
+  font-weight: 600;
+  margin: 0 var(--space-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.life-game__data-unchosen-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+}
+
+.life-game__data-unchosen-category {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 最常错过的机会列表 */
+.life-game__data-missed-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.life-game__data-missed-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+}
+
+.life-game__data-missed-item + .life-game__data-missed-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.life-game__data-missed-name {
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.life-game__data-missed-count {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* SVG 折线图通用：满宽、网格线与坐标文字 */
+.life-game__data-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.life-game__data-grid-line {
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.life-game__data-axis-label {
+  fill: var(--text-muted);
+  font-size: 10px;
+}
+
+/* 图例：色点 + 文字横向排布 */
+.life-game__data-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  margin-top: var(--space-sm);
+}
+
+.life-game__data-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.life-game__data-legend-item i,
+.life-game__data-unchosen-category i {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 能力成长行：标签 + 起点值 + 渐变线 + 终点值 + 增量 */
+.life-game__data-ability-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.life-game__data-ability-row {
+  display: grid;
+  grid-template-columns: 2.5rem 1.5rem 1fr 1.5rem 2.5rem;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+}
+
+.life-game__data-ability-row + .life-game__data-ability-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.life-game__data-ability-label {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.life-game__data-ability-start {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.life-game__data-ability-line {
+  position: relative;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+}
+
+/* 成长幅度越大线段越长，右端带一个发光点指向终点 */
+.life-game__data-ability-line-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  min-width: 8%;
+  background: linear-gradient(90deg, rgba(217, 168, 78, 0.25), var(--gold-primary));
+  border-radius: 1px;
+}
+
+.life-game__data-ability-line-fill::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--gold-bright);
+  box-shadow: 0 0 6px 1px rgba(230, 188, 102, 0.35);
+  transform: translateY(-50%);
+}
+
+.life-game__data-ability-end {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: var(--gold-bright);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.life-game__data-ability-delta {
+  font-size: 0.8125rem;
+  color: var(--gold-primary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 成长时间轴：首列能力名，其余每 5 岁一列，金色 + 标记 */
+.life-game__data-timeline {
+  display: grid;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.life-game__data-timeline-corner,
+.life-game__data-timeline-age,
+.life-game__data-timeline-label,
+.life-game__data-timeline-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.5rem;
+  font-size: 0.6875rem;
+}
+
+.life-game__data-timeline-age {
+  color: var(--text-muted);
+}
+
+.life-game__data-timeline-label {
+  justify-content: flex-start;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.life-game__data-timeline-cell {
+  color: var(--gold-primary);
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+/* 骰运直方图：11 根柱子，点数 2..12 */
+.life-game__data-histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: var(--space-md) 0;
+}
+
+.life-game__data-histogram-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.life-game__data-histogram-count {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  min-height: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.life-game__data-histogram-bar {
+  width: 100%;
+  min-height: 2px;
+  background: linear-gradient(180deg, var(--gold-primary), rgba(217, 168, 78, 0.35));
+  border-radius: 2px 2px 0 0;
+}
+
+.life-game__data-histogram-sum {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 雷达图：居中限宽，网格细线 + 金色取值面 */
+.life-game__data-radar {
+  display: block;
+  width: 100%;
+  max-width: 17rem;
+  height: auto;
+  margin: 0 auto;
+}
+
+.life-game__data-radar-grid {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+}
+
+.life-game__data-radar-shape {
+  fill: rgba(217, 168, 78, 0.18);
+  stroke: var(--gold-primary);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.life-game__data-radar-label {
+  fill: var(--text-secondary);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+}
+
 /* ===== 重新开始入口 ===== */
 
 /* 左上角悬浮重开图标：圆形描边小按钮，悬浮于各游戏阶段之上 */
@@ -898,14 +1541,15 @@ body {
   justify-content: center;
   background: var(--bg-panel);
   color: var(--gold-primary);
-  border: 1px solid var(--border-active);
+  border: 1px solid rgba(217, 168, 78, 0.35);
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .life-game__restart-icon:hover {
   background: var(--gold-faint);
+  border-color: var(--gold-primary);
   color: var(--gold-bright);
 }
 
@@ -933,12 +1577,14 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--inset-top-light), var(--shadow-card);
 }
 
 .life-game__confirm-title {
+  font-family: var(--font-serif);
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.03em;
   color: var(--gold-primary);
   margin: 0 0 var(--space-sm);
 }
@@ -954,4 +1600,24 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-sm);
+}
+
+/* ===== 面板统一材质 ===== */
+
+/* 所有深色面板：顶部微亮纵向渐变 + 细内高光，与事件卡同一"厚卡纸"受光语言 */
+.life-game__stats-panel,
+.life-game__ability-panel,
+.life-game__result-card,
+.life-game__report-stats {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0) 40%);
+  box-shadow: var(--inset-top-light);
+}
+
+/* 数值统一等宽数字（tabular-nums），保证属性 / 结算数值在面板中整齐对齐 */
+.life-game__stats-value,
+.life-game__stat-value,
+.life-game__ability-value,
+.life-game__delta-amount {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }

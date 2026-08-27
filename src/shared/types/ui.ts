@@ -377,8 +377,134 @@ export interface LifeReportViewModel {
   finalStats: Array<UiStatItem<StatKey>>;
 }
 
+// ===== 人生报告第一页：纯数据统计（无需 AI，一秒可得） =====
+
+// 头部一生的关键计数。
+export interface LifeStatsHeader {
+  nickname: string;
+  startAge: number;
+  endAge: number;
+  // 人生选择次数（每回合选一张牌）。
+  choiceCount: number;
+  // 曾经摆在面前的机会总数（各回合最终供选牌的总量）。
+  opportunityCount: number;
+  criticalSuccessCount: number;
+  failureCount: number;
+  // 命运转折次数：换牌即主动改写一次命运。
+  rerollCount: number;
+  // 经历过的人生危机种数（经济/健康/精力/生命危机去重）。
+  crisisCount: number;
+  // 命运事件触发次数。
+  fateEventCount: number;
+}
+
+// 「机会」与「选择」分开统计：同一类别出现过多少、最终选了多少。
+export interface LifeStatsCategoryBalanceItem {
+  key: 'achievement' | 'relationship' | 'self';
+  label: string;
+  appearedCount: number;
+  appearedRatio: number;
+  chosenCount: number;
+  chosenRatio: number;
+}
+
+// 一张没有选择的牌：出现次数与最终选择次数。
+export interface LifeStatsMissedEvent {
+  eventId: string;
+  name: string;
+  appearedCount: number;
+  chosenCount: number;
+}
+
+// 累计选择比例轨迹：每个回合结束后的累计占比。
+export interface LifeStatsTrajectoryPoint {
+  age: number;
+  ratio: number;
+}
+
+// 能力成长时间轴行：记录该能力在哪些年龄发生过正增长。
+export interface LifeStatsAbilityTimelineRow {
+  key: AbilityKey;
+  label: string;
+  growthAges: number[];
+}
+
+// 一生的骰运：分布、平均值与「全 7 反事实」对比。
+export interface LifeStatsDice {
+  rollCount: number;
+  averageSum: number;
+  expectedSum: number;
+  // 2..12 每个点数的出现次数（0 也保留，保证直方图完整）。
+  histogram: Array<{ sum: number; count: number }>;
+  // 若所有骰点固定为 7：实际结果比平均运气更好 / 相同 / 更差的次数。
+  betterCount: number;
+  sameCount: number;
+  worseCount: number;
+}
+
+// 资源曲线：横轴年龄、纵轴数值，含起点与终点。
+export interface LifeStatsResourceSeries {
+  startValue: number;
+  endValue: number;
+  points: Array<{ age: number; value: number }>;
+}
+
+// 人生报告第一页完整 ViewModel：全部由 lifeHistory 派生，不依赖 AI。
+export interface LifeStatsViewModel {
+  header: LifeStatsHeader;
+  finalOutcomes: Array<{ key: OutcomeKey; label: string; value: number }>;
+  categoryBalance: {
+    items: LifeStatsCategoryBalanceItem[];
+    // 模板洞察：出现占比远高于选择占比的类别（没有明显差距时为 null）。
+    insight: string | null;
+  };
+  unchosen: {
+    totalCount: number;
+    byCategory: Array<{ key: 'achievement' | 'relationship' | 'self'; label: string; count: number }>;
+    mostMissed: LifeStatsMissedEvent[];
+    // 纯模板生成的数据描述，例如「培养兴趣」曾 4 次出现，你一次也没有选择它。
+    missedSentence: string | null;
+  };
+  trajectory: {
+    startAge: number;
+    endAge: number;
+    series: Array<{
+      key: 'achievement' | 'relationship' | 'self';
+      label: string;
+      points: LifeStatsTrajectoryPoint[];
+    }>;
+  };
+  abilities: {
+    startAge: number;
+    endAge: number;
+    items: Array<{
+      key: AbilityKey;
+      label: string;
+      startValue: number;
+      endValue: number;
+      delta: number;
+    }>;
+    timeline: {
+      ageMarks: number[];
+      rows: LifeStatsAbilityTimelineRow[];
+    };
+  };
+  // 没有任何检定时为 null（例如所有事件都是直接生效）。
+  dice: LifeStatsDice | null;
+  resources: {
+    startAge: number;
+    endAge: number;
+    money: LifeStatsResourceSeries;
+    energy: LifeStatsResourceSeries;
+  } | null;
+  radar: {
+    scaleMax: number;
+    axes: Array<{ key: OutcomeKey; label: string; value: number }>;
+  };
+}
+
 export interface Phase4UiState {
-  phase: 'create-player' | 'turn-overview' | 'rolling' | 'turn-resolution' | 'game-over' | 'life-report';
+  phase: 'create-player' | 'turn-overview' | 'turn-resolution' | 'game-over' | 'life-report';
   pending: null | 'creating' | 'loading-turn' | 'rerolling' | 'resolving' | 'generating-report';
   resolutionStepIndex: number;
   draft: CreatePlayerInput;

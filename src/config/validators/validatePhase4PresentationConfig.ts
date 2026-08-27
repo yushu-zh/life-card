@@ -17,9 +17,9 @@ const REQUIRED_TOP_FIELDS = [
 ] as const;
 
 // 创建人物界面需要的标签字段。
+// 注意：subtitle 不在其中——它允许为空串（为空时页头引导语不展示），单独按「字符串」校验。
 const REQUIRED_CREATE_PLAYER_FIELDS = [
   'title',
-  'subtitle',
   'nickname',
   'nicknamePlaceholder',
   'appId',
@@ -238,6 +238,10 @@ function validateCreatePlayerLabels(value: unknown): Phase4PresentationConfig['l
 
   for (const field of REQUIRED_CREATE_PLAYER_FIELDS) {
     assertString(createPlayer[field], `labels.createPlayer.${field}`);
+  }
+  // subtitle 允许为空串（隐藏页头引导语），只要求它是字符串。
+  if (typeof createPlayer.subtitle !== 'string') {
+    throw new Error('labels.createPlayer.subtitle must be a string');
   }
 
   return createPlayer as Phase4PresentationConfig['labels']['createPlayer'];

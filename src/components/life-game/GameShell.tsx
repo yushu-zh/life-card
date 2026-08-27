@@ -7,6 +7,7 @@ import { loadTurnSystemConfig } from '../../config/loaders/loadTurnSystemConfig.
 import { loadAiConfig } from '../../config/loaders/loadAiConfig.ts';
 import { createNewGame } from '../../modules/bootstrap/createNewGame.ts';
 import { buildLifeReportExportText, buildLifeReportViewModel } from '../../modules/report/buildLifeReportViewModel.ts';
+import { buildLifeStatsViewModel } from '../../modules/report/buildLifeStatsViewModel.ts';
 import { generateLifeReport } from '../../modules/report/generateLifeReport.ts';
 import { buildCreatePlayerViewModel } from '../../modules/setup/buildCreatePlayerViewModel.ts';
 import { getOrCreateCurrentTurnOffer } from '../../modules/turn/getOrCreateCurrentTurnOffer.ts';
@@ -72,10 +73,10 @@ const PENDING_COPY: Record<
   NonNullable<Phase4UiState['pending']>,
   { title: string; text: string }
 > = {
-  creating: { title: '正在创建人物…', text: '人生即将开始' },
-  'loading-turn': { title: '正在加载回合…', text: '命运正在排布' },
-  rerolling: { title: '正在换牌…', text: '重新洗牌中' },
-  resolving: { title: '正在结算回合…', text: '正在判定结果' },
+  creating: { title: '正在创建人物…', text: '人生即将开始...' },
+  'loading-turn': { title: '正在加载回合…', text: '命运正在排布...' },
+  rerolling: { title: '正在换牌…', text: '重新洗牌中...' },
+  resolving: { title: '正在结算回合…', text: '正在判定结果...' },
   'generating-report': { title: '正在生成人生报告…', text: 'AI 正在回顾你的一生' }
 };
 
@@ -96,6 +97,9 @@ export function GameShell() {
 
   const [currentSnapshot, setCurrentSnapshot] = useState<GameSessionSnapshot | null>(null);
   const [lastResolution, setLastResolution] = useState<TurnResolutionSummary | null>(null);
+  // AI 人生报告是否正在后台生成：进入报告页后立即并发请求，
+  // 用户浏览第一页数据统计期间第二页文章同步就绪，无需等待。
+  const [isReportGenerating, setIsReportGenerating] = useState(false);
 
   // FRIDAY App ID：建档时用户输入并持久化；挂载时从本地回填，重复创建无需再次输入。
   const [appId, setAppId] = useState('');
@@ -278,12 +282,6 @@ export function GameShell() {
         setLastResolution(summary);
         setCurrentSnapshot(summary.updatedSnapshot);
 
-        // 若机会事件需要检定，先显示掷骰过渡。
-        if (summary.opportunity.resolutionKind === 'checked') {
-          setUiState((prev) => ({ ...prev, phase: 'rolling' }));
-          await new Promise((resolve) => setTimeout(resolve, 700));
-        }
-
         // 始终先完整展示结果流；若本局结束，结果流末段按钮会把玩家带去终局页。
         setUiState((prev) => ({
           ...prev,
@@ -365,20 +363,26 @@ export function GameShell() {
     }
   }, [uiState.sessionId, generateReportNarrative]);
 
-  // 查看人生报告：先按需生成并持久化报告，再进入报告页。
-  // 生成失败时仍进入报告页，展示 fallback 总结，结束页绝不为空。
-  const handleViewReport = useCallback(async () => {
+  // 查看人生报告：立即进入报告页展示第一页数据统计（无需 AI），
+  // AI 文章在后台并发生成——用户浏览数据期间第二页通常已经写好。
+  // 生成失败时第二页回退到模板文章，报告页绝不为空。
+  const handleViewReport = useCallback(() => {
     if (!uiState.sessionId) return;
 
-    setUiState((prev) => ({ ...prev, pending: 'generating-report' }));
-    await runReportGeneration();
     setUiState((prev) => ({ ...prev, phase: 'life-report', pending: null }));
-  }, [uiState.sessionId, runReportGeneration]);
+    // 已有生成好的报告时直接复用，不再请求 AI。
+    if (currentSnapshot?.lifecycle.finalReportText) return;
+
+    setIsReportGenerating(true);
+    void runReportGeneration().finally(() => setIsReportGenerating(false));
+  }, [uiState.sessionId, currentSnapshot, runReportGeneration]);
 
   // 重新生成报告：忽略幂等，强制重新请求 AI，成功后覆盖快照并刷新报告。
   const handleRetryReport = useCallback(async () => {
     setUiState((prev) => ({ ...prev, pending: 'generating-report' }));
+    setIsReportGenerating(true);
     await runReportGeneration(true);
+    setIsReportGenerating(false);
     setUiState((prev) => ({ ...prev, pending: null }));
   }, [runReportGeneration]);
 
@@ -453,15 +457,6 @@ export function GameShell() {
       );
     }
 
-    if (uiState.phase === 'rolling') {
-      return (
-        <RollingOverlay
-          title={lastResolution?.opportunity.event.name ?? presentation.labels.rolling.title}
-          loadingText={presentation.labels.rolling.title}
-        />
-      );
-    }
-
     if (uiState.phase === 'turn-resolution') {
       if (!resolutionFlowVm) {
         return (
@@ -506,9 +501,14 @@ export function GameShell() {
       }
 
       const vm = buildLifeReportViewModel(currentSnapshot, presentation);
+      // 第一页数据统计 ViewModel：纯本地派生，构建开销可忽略，随渲染现算即可。
+      const statsVm = buildLifeStatsViewModel(currentSnapshot, opportunityConfig, turnSystemConfig, presentation);
       return (
         <LifeReportScreen
           vm={vm}
+          stats={statsVm}
+          hasAiReport={currentSnapshot.lifecycle.finalReportText != null}
+          isArticleGenerating={isReportGenerating}
           restartLabel={presentation.labels.report.restartAction}
           retryLabel={presentation.labels.report.retryAction}
           exportLabel={presentation.labels.report.exportAction}
@@ -532,7 +532,7 @@ export function GameShell() {
             onConfirm={handleRestart}
           />
         )}
-      {uiState.pending && uiState.phase !== 'rolling' && (
+      {uiState.pending && (
         <RollingOverlay
           title={PENDING_COPY[uiState.pending].title}
           loadingText={PENDING_COPY[uiState.pending].text}

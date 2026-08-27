@@ -30,7 +30,7 @@ export function EventCard({ card, onSelect }: EventCardProps) {
       <div className="life-game__card-check">{card.checkLabel}</div>
 
       <div className="life-game__card-hints">
-        <HintRow label="可能收获" items={card.rewards} />
+        <HintRow label="成功收获" items={card.rewards} />
         <HintRow label="固定代价" items={card.fixedCosts} />
         <HintRow label="失败风险" items={card.risks} />
       </div>
