@@ -21,6 +21,10 @@ describe('loadAiConfig', () => {
     assert.ok(config.cardPrompt.userTemplate);
     assert.ok(config.resultPrompt.system);
     assert.ok(config.resultPrompt.userTemplate);
+    assert.ok(config.fatePrompt.system);
+    assert.ok(config.fatePrompt.userTemplate);
+    assert.ok(config.statusPrompt.system);
+    assert.ok(config.statusPrompt.userTemplate);
     assert.ok(config.reportPrompt.system);
     assert.ok(config.reportPrompt.userTemplate);
   });
@@ -64,6 +68,20 @@ describe('validateAiConfig', () => {
     (config.reportPrompt as Record<string, unknown>).system = '';
 
     assert.throws(() => validateAiConfig(config), /reportPrompt.system must be a non-empty string/);
+  });
+
+  it('throws when fatePrompt.system is empty', () => {
+    const config = buildValidConfig();
+    (config.fatePrompt as Record<string, unknown>).system = '';
+
+    assert.throws(() => validateAiConfig(config), /fatePrompt.system must be a non-empty string/);
+  });
+
+  it('throws when statusPrompt.userTemplate is empty', () => {
+    const config = buildValidConfig();
+    (config.statusPrompt as Record<string, unknown>).userTemplate = '';
+
+    assert.throws(() => validateAiConfig(config), /statusPrompt.userTemplate must be a non-empty string/);
   });
 
   it('throws when maxTokens is not a positive integer', () => {

@@ -50,4 +50,40 @@ describe('buildTurnResolutionFlowViewModel', () => {
     assert.strictEqual(statusStep.isTerminal, true);
     assert.strictEqual(vm.nextAction.target, 'game-over');
   });
+
+  it('prefers AI fate description over curated fallback', () => {
+    const { summary } = phase4MockScenarios.resultWithFateMitigation;
+    const withAi = structuredClone(summary);
+    withAi.narrative = {
+      card: null,
+      result: null,
+      fate: { description: '公司架构调整，你被迫离开原有岗位。' },
+      statuses: {}
+    };
+
+    const vm = buildTurnResolutionFlowViewModel(withAi, opportunityConfig, presentation);
+
+    const fateStep = vm.steps.find((step) => step.kind === 'fate')!;
+    assert.strictEqual(fateStep.narrativeSource, 'ai-generated');
+    assert.deepEqual(fateStep.body, ['公司架构调整，你被迫离开原有岗位。']);
+  });
+
+  it('prefers AI status description over curated fallback', () => {
+    const { summary } = phase4MockScenarios.resultWithStatusEnd;
+    const withAi = structuredClone(summary);
+    withAi.narrative = {
+      card: null,
+      result: null,
+      fate: null,
+      statuses: {
+        'health-crisis': { description: '健康持续恶化，最终未能挺过。' }
+      }
+    };
+
+    const vm = buildTurnResolutionFlowViewModel(withAi, opportunityConfig, presentation);
+
+    const statusStep = vm.steps.find((step) => step.kind === 'status')!;
+    assert.strictEqual(statusStep.narrativeSource, 'ai-generated');
+    assert.deepEqual(statusStep.body, ['健康持续恶化，最终未能挺过。']);
+  });
 });

@@ -11,6 +11,7 @@ const ABILITY_ORDER: AbilityKey[] = ['cognition', 'execution', 'social', 'creati
 export function buildCreatePlayerViewModel(
   draft: CreatePlayerInput,
   appId: string,
+  deepseekApiKey: string,
   config: InitialStateConfig,
   presentation: Phase4PresentationConfig
 ): CreatePlayerViewModel {
@@ -18,8 +19,8 @@ export function buildCreatePlayerViewModel(
   const totalAllocated = sumNumbers(ABILITY_ORDER.map((key) => draft.abilities[key]));
   const remainingPoints = config.abilityPointTotal - totalAllocated;
 
-  const errors = collectFieldErrors(draft, appId, config);
-  const disabledReason = buildDisabledReason(draft, appId, config, remainingPoints, errors, presentation);
+  const errors = collectFieldErrors(draft, appId, deepseekApiKey, config);
+  const disabledReason = buildDisabledReason(draft, appId, deepseekApiKey, config, remainingPoints, errors, presentation);
 
   const abilityItems = ABILITY_ORDER.map((key) => {
     const value = draft.abilities[key];
@@ -43,6 +44,9 @@ export function buildCreatePlayerViewModel(
       nicknamePlaceholder: labels.nicknamePlaceholder,
       appId: labels.appId,
       appIdPlaceholder: labels.appIdPlaceholder,
+      appIdHint: labels.appIdHint,
+      deepseekApiKey: labels.deepseekApiKey,
+      deepseekApiKeyPlaceholder: labels.deepseekApiKeyPlaceholder,
       skillTags: labels.skillTags,
       skillTagsPlaceholder: labels.skillTagsPlaceholder,
       skillTagsAction: labels.skillTagsAction,
@@ -57,6 +61,7 @@ export function buildCreatePlayerViewModel(
     },
     draft,
     appId,
+    deepseekApiKey,
     limits: {
       skillTagLimit: config.skillTagLimit,
       wishLimit: config.wishLimit,
@@ -79,6 +84,7 @@ export function buildCreatePlayerViewModel(
 function collectFieldErrors(
   draft: CreatePlayerInput,
   appId: string,
+  deepseekApiKey: string,
   config: InitialStateConfig
 ): CreatePlayerViewModel['errors'] {
   const errors: CreatePlayerViewModel['errors'] = {};
@@ -87,8 +93,9 @@ function collectFieldErrors(
     errors.nickname = '昵称不能为空';
   }
 
-  if (!appId.trim()) {
-    errors.appId = 'App ID 不能为空';
+  // App ID 与 DeepSeek API Key 二选一，两者都为空时不允许开始。
+  if (!appId.trim() && !deepseekApiKey.trim()) {
+    errors.aiCredential = '请至少填写 App ID 或 DeepSeek API Key 之一';
   }
 
   if (draft.profile.skillTags.length > config.skillTagLimit) {
@@ -119,6 +126,7 @@ function collectFieldErrors(
 function buildDisabledReason(
   draft: CreatePlayerInput,
   appId: string,
+  deepseekApiKey: string,
   config: InitialStateConfig,
   remainingPoints: number,
   errors: CreatePlayerViewModel['errors'],
@@ -128,8 +136,9 @@ function buildDisabledReason(
     return '请先填写昵称';
   }
 
-  if (!appId.trim()) {
-    return '请先填写 App ID';
+  // App ID 与 DeepSeek API Key 至少填一个，否则无法调用 AI。
+  if (!appId.trim() && !deepseekApiKey.trim()) {
+    return '请至少填写 App ID 或 DeepSeek API Key 之一';
   }
 
   if (draft.profile.skillTags.length > config.skillTagLimit) {

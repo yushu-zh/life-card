@@ -15,6 +15,7 @@ export function validateAiConfig(value: unknown): AiConfig {
   assertStyle(config.style, 'style');
   assertNonEmptyString(config.model, 'model');
   assertNonEmptyString(config.baseUrl, 'baseUrl');
+  assertNonEmptyString(config.deepseekBaseUrl, 'deepseekBaseUrl');
   assertPositiveInteger(config.timeoutMs, 'timeoutMs');
   assertNonNegativeInteger(config.maxRetries, 'maxRetries');
   assertPositiveInteger(config.maxTokens, 'maxTokens');
@@ -22,6 +23,8 @@ export function validateAiConfig(value: unknown): AiConfig {
 
   const cardPrompt = validatePrompt(config.cardPrompt, 'cardPrompt');
   const resultPrompt = validatePrompt(config.resultPrompt, 'resultPrompt');
+  const fatePrompt = validatePrompt(config.fatePrompt, 'fatePrompt');
+  const statusPrompt = validatePrompt(config.statusPrompt, 'statusPrompt');
   const reportPrompt = validatePrompt(config.reportPrompt, 'reportPrompt');
   const eventHints = validateEventHints(config.eventHints);
 
@@ -30,12 +33,15 @@ export function validateAiConfig(value: unknown): AiConfig {
     style: config.style as NarrativeStyle,
     model: config.model as string,
     baseUrl: config.baseUrl as string,
+    deepseekBaseUrl: config.deepseekBaseUrl as string,
     timeoutMs: config.timeoutMs as number,
     maxRetries: config.maxRetries as number,
     maxTokens: config.maxTokens as number,
     reportTimeoutMs: config.reportTimeoutMs as number,
     cardPrompt,
     resultPrompt,
+    fatePrompt,
+    statusPrompt,
     reportPrompt,
     eventHints
   };

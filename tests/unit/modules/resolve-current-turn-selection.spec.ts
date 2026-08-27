@@ -249,4 +249,97 @@ describe('resolveCurrentTurnSelection', () => {
       assert.deepEqual(historyEntry.narrative, summary.narrative);
     }
   });
+
+  it('attaches AI fate narrative to summary and history when fate triggers', async () => {
+    const store = createGameSessionStore({ indexedDB: createInMemoryIndexedDB() });
+
+    await createNewGame(baseInput, { sessionId: 'session-resolve-fate-ai', store });
+
+    await getOrCreateCurrentTurnOffer(
+      { sessionId: 'session-resolve-fate-ai' },
+      { store, random: () => 0 }
+    );
+
+    const summary = await resolveCurrentTurnSelection(
+      { sessionId: 'session-resolve-fate-ai', slotIndex: 0 },
+      {
+        store,
+        // random 0 低于命运触发概率，确保本回合触发命运事件。
+        random: () => 0,
+        rollDice: () => ({ first: 2, second: 3 }),
+        // 空状态结果，避免默认状态引擎干扰本用例。
+        resolveStatuses: (snapshot) => ({
+          updatedSnapshot: snapshot,
+          results: [],
+          ended: false,
+          endReason: null
+        }),
+        generateFateNarrative: async () => ({
+          description: '公司架构调整，你被迫离开原有岗位。'
+        })
+      }
+    );
+
+    assert.ok(summary.fate?.triggered);
+    assert.strictEqual(summary.narrative?.fate?.description, '公司架构调整，你被迫离开原有岗位。');
+
+    const historyEntry = summary.updatedSnapshot.records.lifeHistory.at(-1);
+    assert.equal(historyEntry?.type, 'turn-resolution');
+    if (historyEntry?.type === 'turn-resolution') {
+      assert.deepEqual(historyEntry.narrative, summary.narrative);
+    }
+  });
+
+  it('attaches AI status narrative to summary and history when statuses trigger', async () => {
+    const store = createGameSessionStore({ indexedDB: createInMemoryIndexedDB() });
+
+    await createNewGame(baseInput, { sessionId: 'session-resolve-status-ai', store });
+
+    await getOrCreateCurrentTurnOffer(
+      { sessionId: 'session-resolve-status-ai' },
+      { store, random: () => 0 }
+    );
+
+    const summary = await resolveCurrentTurnSelection(
+      { sessionId: 'session-resolve-status-ai', slotIndex: 0 },
+      {
+        store,
+        // random 0.9 高于命运触发概率，避免命运事件干扰本用例。
+        random: () => 0.9,
+        rollDice: () => ({ first: 2, second: 3 }),
+        resolveStatuses: (snapshot) => {
+          const updatedSnapshot = structuredClone(snapshot);
+
+          return {
+            updatedSnapshot,
+            results: [
+              {
+                id: 'economic-crisis',
+                name: '经济危机',
+                kind: 'one-time-effect',
+                resolutionMode: 'once-per-game',
+                firstTrigger: true,
+                conditions: [{ key: 'money', operator: '<=', threshold: 0, actual: 0 }],
+                appliedDeltas: [{ key: 'happiness', amount: -1 }]
+              }
+            ],
+            ended: false,
+            endReason: null
+          };
+        },
+        generateStatusNarrative: async () => ({
+          description: '收入中断让你陷入经济压力。'
+        })
+      }
+    );
+
+    assert.strictEqual(summary.statuses.length, 1);
+    assert.strictEqual(summary.narrative?.statuses['economic-crisis']?.description, '收入中断让你陷入经济压力。');
+
+    const historyEntry = summary.updatedSnapshot.records.lifeHistory.at(-1);
+    assert.equal(historyEntry?.type, 'turn-resolution');
+    if (historyEntry?.type === 'turn-resolution') {
+      assert.deepEqual(historyEntry.narrative, summary.narrative);
+    }
+  });
 });

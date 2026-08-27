@@ -3,7 +3,9 @@ import { describe, it } from 'node:test';
 
 import {
   parseEventCardNarrative,
-  parseOpportunityResultNarrative
+  parseFateNarrative,
+  parseOpportunityResultNarrative,
+  parseStatusNarrative
 } from '../../../src/ai/validateNarrativeOutput.ts';
 
 // 测试 AI 输出的白名单校验：只接受一段描述，非法/缺字段/非 JSON 一律返回 null。
@@ -68,5 +70,40 @@ describe('parseOpportunityResultNarrative', () => {
 
   it('returns null when description is missing', () => {
     assert.strictEqual(parseOpportunityResultNarrative('{}'), null);
+  });
+});
+
+describe('parseFateNarrative', () => {
+  it('parses valid fate narrative and strips forbidden fields', () => {
+    const raw = JSON.stringify({
+      description: '公司架构调整，你被迫离开原有岗位。',
+      appliedDeltas: [{ key: 'money', amount: -2 }]
+    });
+
+    assert.deepEqual(parseFateNarrative(raw), {
+      description: '公司架构调整，你被迫离开原有岗位。'
+    });
+  });
+
+  it('returns null when description is missing', () => {
+    assert.strictEqual(parseFateNarrative('{}'), null);
+  });
+
+  it('returns null for invalid JSON', () => {
+    assert.strictEqual(parseFateNarrative('not json'), null);
+  });
+});
+
+describe('parseStatusNarrative', () => {
+  it('parses valid status narrative', () => {
+    const raw = JSON.stringify({ description: '收入中断让你陷入经济压力。' });
+
+    assert.deepEqual(parseStatusNarrative(raw), {
+      description: '收入中断让你陷入经济压力。'
+    });
+  });
+
+  it('returns null when description is empty', () => {
+    assert.strictEqual(parseStatusNarrative('{"description":""}'), null);
   });
 });

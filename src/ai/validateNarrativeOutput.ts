@@ -1,4 +1,4 @@
-import type { EventCardNarrative, LifeReportNarrative, OpportunityResultNarrative } from '../shared/types/narrative.ts';
+import type { EventCardNarrative, FateEventNarrative, LifeReportNarrative, OpportunityResultNarrative, StatusEventNarrative } from '../shared/types/narrative.ts';
 
 // 解析并校验 AI 返回的事件牌文案。
 // 只读取白名单字段（一段描述），其余字段一律忽略；缺失、空或非法都返回 null，交由上层走 fallback。
@@ -18,6 +18,36 @@ export function parseEventCardNarrative(raw: string): EventCardNarrative | null 
 
 // 解析并校验 AI 返回的结果文案。只读取白名单字段（一段描述），非法则返回 null。
 export function parseOpportunityResultNarrative(raw: string): OpportunityResultNarrative | null {
+  const value = parseObject(raw);
+  if (!value) {
+    return null;
+  }
+
+  const description = readString(value.description);
+  if (!description) {
+    return null;
+  }
+
+  return { description };
+}
+
+// 解析并校验 AI 返回的命运事件文案。只读取白名单字段（一段描述），非法则返回 null。
+export function parseFateNarrative(raw: string): FateEventNarrative | null {
+  const value = parseObject(raw);
+  if (!value) {
+    return null;
+  }
+
+  const description = readString(value.description);
+  if (!description) {
+    return null;
+  }
+
+  return { description };
+}
+
+// 解析并校验 AI 返回的状态触发文案。只读取白名单字段（一段描述），非法则返回 null。
+export function parseStatusNarrative(raw: string): StatusEventNarrative | null {
   const value = parseObject(raw);
   if (!value) {
     return null;

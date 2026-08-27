@@ -11,8 +11,8 @@ import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { Dice2D6 } from '../../shared/types/opportunity.ts';
 import type { StatusSystemConfig } from '../../shared/types/status.ts';
 import type { ResolveTurnStatusesResult, TurnOfferCard, TurnResolutionSummary } from '../../shared/types/turn.ts';
-import { buildResultNarrativeFacts } from '../../ai/buildNarrativeFacts.ts';
-import type { EventCardNarrative, OpportunityResultNarrative, ResultNarrativeFacts, TurnNarrativeRecord } from '../../shared/types/narrative.ts';
+import { buildFateNarrativeFacts, buildResultNarrativeFacts, buildStatusNarrativeFacts } from '../../ai/buildNarrativeFacts.ts';
+import type { EventCardNarrative, FateEventNarrative, FateNarrativeFacts, OpportunityResultNarrative, ResultNarrativeFacts, StatusEventNarrative, StatusNarrativeFacts, TurnNarrativeRecord } from '../../shared/types/narrative.ts';
 
 // 选择当前牌组中的一张牌，并把整回合结算到最终可持久化状态。
 export async function resolveCurrentTurnSelection(
@@ -30,6 +30,8 @@ export async function resolveCurrentTurnSelection(
       options?: { random?: () => number }
     ) => ResolveTurnStatusesResult;
     generateResultNarrative?: (facts: ResultNarrativeFacts) => Promise<OpportunityResultNarrative | null>;
+    generateFateNarrative?: (facts: FateNarrativeFacts) => Promise<FateEventNarrative | null>;
+    generateStatusNarrative?: (facts: StatusNarrativeFacts) => Promise<StatusEventNarrative | null>;
     selectedCardNarrative?: EventCardNarrative | null;
   }
 ): Promise<TurnResolutionSummary> {
@@ -95,14 +97,13 @@ export async function resolveCurrentTurnSelection(
       )
     : null;
   const selectedCardNarrative = options?.selectedCardNarrative ?? null;
-  // 没有任何 AI 叙事时保持 null，避免给无 AI 的模拟/历史写入空叙事记录。
-  const narrative: TurnNarrativeRecord | null =
-    resultNarrative || selectedCardNarrative
-      ? { card: selectedCardNarrative, result: resultNarrative }
-      : null;
   const fateSummary = resolveFateEvent(opportunitySummary.updatedSnapshot, turnSystemConfig.fate, {
     random: options?.random
   });
+  // 命运事件触发时生成 AI 变故文案（可选；未注入或未触发时为 null，UI 走 fallback）。
+  const fateNarrative = fateSummary.triggered && options?.generateFateNarrative
+    ? await options.generateFateNarrative(buildFateNarrativeFacts(fateSummary.updatedSnapshot, fateSummary))
+    : null;
   const statusResult = (options?.resolveStatuses ?? defaultResolveStatuses)(
     fateSummary.updatedSnapshot,
     turnSystemConfig.statuses,
@@ -110,6 +111,25 @@ export async function resolveCurrentTurnSelection(
       random: options?.random
     }
   );
+  // 每个状态独立生成一段 AI 文案，互不依赖，并行以降低等待。
+  const statusNarratives: Record<string, StatusEventNarrative> = {};
+  if (options?.generateStatusNarrative && statusResult.results.length > 0) {
+    const tasks = statusResult.results.map(async (status) => ({
+      id: status.id,
+      narrative: await options.generateStatusNarrative!(buildStatusNarrativeFacts(fateSummary.updatedSnapshot, status))
+    }));
+    const built = await Promise.all(tasks);
+    for (const { id, narrative } of built) {
+      if (narrative) {
+        statusNarratives[id] = narrative;
+      }
+    }
+  }
+  // 没有任何 AI 叙事时保持 null，避免给无 AI 的模拟/历史写入空叙事记录。
+  const narrative: TurnNarrativeRecord | null =
+    resultNarrative || selectedCardNarrative || fateNarrative || Object.keys(statusNarratives).length > 0
+      ? { card: selectedCardNarrative, result: resultNarrative, fate: fateNarrative, statuses: statusNarratives }
+      : null;
   const discardedCards = buildDiscardedCards(activeTurn, selectedCard);
   const updatedSnapshot = structuredClone(statusResult.updatedSnapshot);
 

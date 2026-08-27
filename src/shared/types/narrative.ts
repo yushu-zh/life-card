@@ -1,5 +1,6 @@
 import type { AbilityKey, CreatePlayerInput } from './bootstrap.ts';
 import type { OpportunityCategory, OpportunityResultGrade, StatDelta } from './opportunity.ts';
+import type { StatusConditionSnapshot } from './status.ts';
 
 // 事件牌文案：AI 只输出一段事件描述（背景 + 你选择怎么做），其余字段一律白名单剥离。
 export interface EventCardNarrative {
@@ -11,10 +12,23 @@ export interface OpportunityResultNarrative {
   description: string;
 }
 
-// 一回合采纳的叙事：两个槽位都可为 null（表示走既有 fallback）。
+// 命运事件文案：AI 只输出一段变故描述。
+export interface FateEventNarrative {
+  description: string;
+}
+
+// 状态触发事件文案：AI 只输出一段状态描述（触发原因 + 本次结果）。
+export interface StatusEventNarrative {
+  description: string;
+}
+
+// 一回合采纳的叙事：四个槽位都可为空，任一为空表示该位置走既有 fallback。
 export interface TurnNarrativeRecord {
   card: EventCardNarrative | null;
   result: OpportunityResultNarrative | null;
+  fate: FateEventNarrative | null;
+  // 按状态 id 索引；一个回合可能同时触发多个状态，各自独立生成。
+  statuses: Record<string, StatusEventNarrative>;
 }
 
 // 组装事件牌文案 prompt 的结构化事实。
@@ -48,6 +62,26 @@ export interface ResultNarrativeFacts {
   cardDescription: string;
 }
 
+// 组装命运事件文案 prompt 的结构化事实。
+export interface FateNarrativeFacts {
+  player: CreatePlayerInput['profile'];
+  age: number;
+  eventName: string;
+  appliedDeltas: StatDelta[];
+  mitigatedDelta: StatDelta | null;
+}
+
+// 组装状态触发文案 prompt 的结构化事实。
+export interface StatusNarrativeFacts {
+  player: CreatePlayerInput['profile'];
+  age: number;
+  statusName: string;
+  kind: 'one-time-effect' | 'death-risk' | 'per-cycle-effect';
+  conditions: StatusConditionSnapshot[];
+  appliedDeltas: StatDelta[];
+  died: boolean;
+}
+
 // 人生报告叙事正文：AI 只输出一段由多个段落组成的报告正文，其余字段一律白名单剥离。
 export interface LifeReportNarrative {
   paragraphs: string[];
@@ -77,12 +111,16 @@ export interface LifeReportFacts {
   fateEvents: Array<{
     age: number;
     eventName: string;
+    // AI 生成的命运变故描述；无 AI 时为 null，报告仍可用事件名退化。
+    description: string | null;
   }>;
   statusEvents: Array<{
     age: number;
     statusName: string;
     kind: 'one-time-effect' | 'death-risk' | 'per-cycle-effect';
     died: boolean;
+    // AI 生成的状态描述；无 AI 时为 null，报告仍可用状态名退化。
+    description: string | null;
   }>;
   finalStats: Array<{ label: string; value: number }>;
   lifeNodes: string;
@@ -106,6 +144,8 @@ export interface AiConfig {
   style: NarrativeStyle;
   model: string;
   baseUrl: string;
+  // DeepSeek 官方 API 的地址（公网），与美团内网 baseUrl 区分开。
+  deepseekBaseUrl: string;
   timeoutMs: number;
   maxRetries: number;
   // 输出 token 上限；报告要输出整篇文章，需要比事件卡大得多。
@@ -114,6 +154,8 @@ export interface AiConfig {
   reportTimeoutMs: number;
   cardPrompt: AiPromptConfig;
   resultPrompt: AiPromptConfig;
+  fatePrompt: AiPromptConfig;
+  statusPrompt: AiPromptConfig;
   reportPrompt: AiPromptConfig;
   // 每个事件可选的范围提示词，键为 eventId，用于约束该事件的生成边界。
   eventHints: Record<string, string>;

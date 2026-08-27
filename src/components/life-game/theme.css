@@ -496,6 +496,60 @@ body {
   color: var(--danger);
 }
 
+/* ===== 紧凑数值区（回合主界面，对齐事件界面参考图） ===== */
+
+/* 每行分组：侧边标题 + 数值流式排布 */
+.life-game__stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.life-game__stat-row + .life-game__stat-row {
+  margin-top: var(--space-sm);
+}
+
+/* 侧边分组标题：能力 / 资源 / 人生指标 */
+.life-game__stat-heading {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: var(--gold-dim);
+}
+
+/* 数值容器：完整属性名 + 数值横向连排，流式换行 */
+.life-game__stat-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-sm) var(--space-md);
+}
+
+/* 单个数值项：名称与数值横向，基线对齐 */
+.life-game__stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.life-game__stat-name {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.life-game__stat-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.life-game__stat-value--warning {
+  color: var(--warning);
+}
+
+.life-game__stat-value--danger {
+  color: var(--danger);
+}
+
 /* 事件卡列表：移动端纵向堆叠，桌面端三列横排 */
 .life-game__cards {
   display: grid;

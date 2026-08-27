@@ -15,7 +15,17 @@ import { resolveCurrentTurnSelection } from '../../modules/turn/resolveCurrentTu
 import { generateTurnCardNarratives } from '../../modules/turn/generateTurnCardNarratives.ts';
 import { buildTurnOverviewViewModel } from '../../modules/turn/buildTurnOverviewViewModel.ts';
 import { buildTurnResolutionFlowViewModel } from '../../modules/turn/buildTurnResolutionFlowViewModel.ts';
-import { createFridayTransport, generateEventCardNarrative, generateLifeReportNarrative, generateOpportunityResultNarrative } from '../../ai/narrativeService.ts';
+import {
+  createDeepSeekTransport,
+  createFridayTransport,
+  createMockNarrativeTransport,
+  generateEventCardNarrative,
+  generateFateNarrative as generateFateNarrativeService,
+  generateLifeReportNarrative,
+  generateOpportunityResultNarrative,
+  generateStatusNarrative as generateStatusNarrativeService,
+  resolveAiProvider
+} from '../../ai/narrativeService.ts';
 import { createGameSessionStore } from '../../storage/game-session/store.ts';
 import {
   clearCurrentSessionPointer,
@@ -23,11 +33,12 @@ import {
   saveCurrentSessionPointer
 } from '../../storage/game-session/currentSessionPointer.ts';
 import { loadFridayAppId, saveFridayAppId } from '../../storage/friday-app-id.ts';
+import { loadDeepSeekApiKey, saveDeepSeekApiKey } from '../../storage/deepseek-api-key.ts';
 import type { CreatePlayerInput } from '../../shared/types/bootstrap.ts';
 import type { GameSessionSnapshot } from '../../shared/types/game-session.ts';
 import type { Phase4UiState } from '../../shared/types/ui.ts';
 import type { TurnResolutionSummary } from '../../shared/types/turn.ts';
-import type { CardNarrativeFacts, EventCardNarrative, LifeReportFacts, ResultNarrativeFacts } from '../../shared/types/narrative.ts';
+import type { CardNarrativeFacts, EventCardNarrative, FateNarrativeFacts, LifeReportFacts, ResultNarrativeFacts, StatusNarrativeFacts } from '../../shared/types/narrative.ts';
 
 import { CreatePlayerScreen } from './CreatePlayerScreen.tsx';
 import { GameOverScreen } from './GameOverScreen.tsx';
@@ -88,16 +99,35 @@ export function GameShell() {
 
   // FRIDAY App ID：建档时用户输入并持久化；挂载时从本地回填，重复创建无需再次输入。
   const [appId, setAppId] = useState('');
+  // DeepSeek API Key：与 App ID 二选一，同样持久化并在挂载时回填。
+  const [deepseekApiKey, setDeepseekApiKey] = useState('');
 
   // Phase 6：AI 叙事服务与当前回合事件牌文案缓存。
   const aiConfig = useMemo(() => loadAiConfig(), []);
-  const narrativeTransport = useMemo(() => createFridayTransport(aiConfig, appId), [aiConfig, appId]);
+  // 根据用户填写的凭据决定走美团 FRIDAY 还是 DeepSeek 官方；都填时优先美团，都没填时用 mock 兜底（建档校验会拦截）。
+  const narrativeTransport = useMemo(() => {
+    const resolved = resolveAiProvider(appId, deepseekApiKey);
+    if (!resolved) {
+      return createMockNarrativeTransport();
+    }
+    return resolved.provider === 'friday'
+      ? createFridayTransport(aiConfig, resolved.key)
+      : createDeepSeekTransport(aiConfig, resolved.key);
+  }, [aiConfig, appId, deepseekApiKey]);
   const generateCardNarrative = useCallback(
     (facts: CardNarrativeFacts) => generateEventCardNarrative(facts, aiConfig, narrativeTransport),
     [aiConfig, narrativeTransport]
   );
   const generateResultNarrative = useCallback(
     (facts: ResultNarrativeFacts) => generateOpportunityResultNarrative(facts, aiConfig, narrativeTransport),
+    [aiConfig, narrativeTransport]
+  );
+  const generateFateNarrative = useCallback(
+    (facts: FateNarrativeFacts) => generateFateNarrativeService(facts, aiConfig, narrativeTransport),
+    [aiConfig, narrativeTransport]
+  );
+  const generateStatusNarrative = useCallback(
+    (facts: StatusNarrativeFacts) => generateStatusNarrativeService(facts, aiConfig, narrativeTransport),
     [aiConfig, narrativeTransport]
   );
   const generateReportNarrative = useCallback(
@@ -148,9 +178,10 @@ export function GameShell() {
     void restoreSession();
   }, []);
 
-  // 挂载时回填上次保存的 FRIDAY App ID，重复创建角色无需再次输入。
+  // 挂载时回填上次保存的 FRIDAY App ID 与 DeepSeek API Key，重复创建角色无需再次输入。
   useEffect(() => {
     void loadFridayAppId().then(setAppId);
+    void loadDeepSeekApiKey().then(setDeepseekApiKey);
   }, []);
 
   // 更新建档草稿。
@@ -162,8 +193,9 @@ export function GameShell() {
   const handleStart = useCallback(async () => {
     setUiState((prev) => ({ ...prev, pending: 'creating' }));
     try {
-      // 先持久化 App ID，下次创建角色时自动回填。
+      // 先持久化 App ID 与 DeepSeek API Key，下次创建角色时自动回填。
       await saveFridayAppId(appId);
+      await saveDeepSeekApiKey(deepseekApiKey);
 
       const snapshot = await createNewGame(uiState.draft);
       await saveCurrentSessionPointer({ sessionId: snapshot.meta.sessionId });
@@ -193,7 +225,7 @@ export function GameShell() {
       // eslint-disable-next-line no-console
       console.error('创建游戏失败', error);
     }
-  }, [uiState.draft, appId, generateCardNarrative]);
+  }, [uiState.draft, appId, deepseekApiKey, generateCardNarrative]);
 
   // 换牌一次。
   const handleReroll = useCallback(async () => {
@@ -237,6 +269,8 @@ export function GameShell() {
           },
           {
             generateResultNarrative,
+            generateFateNarrative,
+            generateStatusNarrative,
             selectedCardNarrative
           }
         );
@@ -263,7 +297,7 @@ export function GameShell() {
         console.error('结算回合失败', error);
       }
     },
-    [uiState.sessionId, currentSnapshot, cardNarratives, generateResultNarrative]
+    [uiState.sessionId, currentSnapshot, cardNarratives, generateResultNarrative, generateFateNarrative, generateStatusNarrative]
   );
 
   // 结果流下一步：先逐段推进结果流，全部看完后再进入下一回合。
@@ -380,12 +414,13 @@ export function GameShell() {
   // 根据当前阶段渲染内容。
   function renderContent() {
     if (uiState.phase === 'create-player') {
-      const vm = buildCreatePlayerViewModel(uiState.draft, appId, initialConfig, presentation);
+      const vm = buildCreatePlayerViewModel(uiState.draft, appId, deepseekApiKey, initialConfig, presentation);
       return (
         <CreatePlayerScreen
           vm={vm}
           onChange={handleDraftChange}
           onAppIdChange={setAppId}
+          onDeepSeekApiKeyChange={setDeepseekApiKey}
           onStart={handleStart}
         />
       );

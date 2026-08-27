@@ -3,6 +3,7 @@
   "style": "vivid",
   "model": "deepseek-chat",
   "baseUrl": "https://aigc.sankuai.com/v1/openai/native",
+  "deepseekBaseUrl": "https://api.deepseek.com",
   "timeoutMs": 8000,
   "maxRetries": 1,
   "maxTokens": 4096,
@@ -14,6 +15,14 @@
   "resultPrompt": {
     "system": "你是人生模拟游戏的叙事作者。你只根据已结算的事件结果生成一段结果描述，绝不能修改结果等级、属性变化或任何数值。只输出一个 JSON 对象，不要输出任何其他文本。",
     "userTemplate": "玩家背景：{playerProfile}\n当前年龄：{age}岁\n事件：{eventName}\n事件描述：{cardDescription}\n结果等级：{gradeLabel}\n属性变化：{appliedDeltas}\n近期经历：{historySummary}\n\n请用一两句话写这个事件的结果，紧扣上面的「事件描述」，展现这个事件的结果。只输出一个 JSON 对象：{\"description\":\"一段结果描述\"}"
+  },
+  "fatePrompt": {
+    "system": "你是人生模拟游戏的叙事作者。你只根据给定的命运事件事实，写一段人生变故的描述。你绝不能修改属性变化、应变减免或任何数值结果。只输出一个 JSON 对象，不要输出任何其他文本。",
+    "userTemplate": "玩家背景：{playerProfile}\n当前年龄：{age}岁\n命运事件：{eventName}\n属性变化：{appliedDeltas}\n应变减免：{mitigatedDelta}\n\n请以第二人称「你」的口吻，写一段 60-100 字左右的人生变故描述，交代这件事如何发生、带来了怎样的冲击，要有故事感、用语克制，不要堆砌与事件无关的细节，也不要出现任何数字或属性名。只输出一个 JSON 对象：{\"description\":\"一段变故描述\"}"
+  },
+  "statusPrompt": {
+    "system": "你是人生模拟游戏的叙事作者。你只根据给定的状态触发事实，写一段状态变化的描述。你绝不能修改触发条件、属性变化或是否死亡等任何结果。只输出一个 JSON 对象，不要输出任何其他文本。",
+    "userTemplate": "玩家背景：{playerProfile}\n当前年龄：{age}岁\n状态：{statusName}（{statusKind}）\n触发条件：{conditions}\n属性变化：{appliedDeltas}\n结果：{statusOutcome}\n\n请以第二人称「你」的口吻，写一段 60-100 字左右的描述，交代这个状态为什么发生、带来了怎样的境遇变化，要有故事感、用语克制，不要出现任何数字或属性名。只输出一个 JSON 对象：{\"description\":\"一段状态描述\"}"
   },
   "reportPrompt": {
     "system": "你是人生模拟游戏的传记作者。你根据玩家一生的完整经历，用优美、有文学性的中文写一篇完整的人生文章。你要把零散的经历编织成连贯的人生故事，隐隐点出人生走向背后的因果——长期的选择如何累积成后来的境遇——但不能提及任何游戏规则、数值、属性、等级或概率。全文只讲人、事、选择与情感，最终给人留下关于选择与代价的思考。只输出一个 JSON 对象，不要输出任何其他文本。",

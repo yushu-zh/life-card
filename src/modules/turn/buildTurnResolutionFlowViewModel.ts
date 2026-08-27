@@ -1,4 +1,5 @@
 import type { OpportunityEventConfig, OpportunityResultGrade, StatDelta, StatKey } from '../../shared/types/opportunity.ts';
+import type { FateEventNarrative, StatusEventNarrative } from '../../shared/types/narrative.ts';
 import type { TurnResolutionSummary } from '../../shared/types/turn.ts';
 import type {
   DisplayTone,
@@ -25,12 +26,12 @@ export function buildTurnResolutionFlowViewModel(
 
   // 2. 后续变故（命运事件），仅在触发时出现。
   if (summary.fate?.triggered) {
-    steps.push(buildFateStep(summary.fate, presentation));
+    steps.push(buildFateStep(summary.fate, presentation, summary.narrative?.fate ?? null));
   }
 
   // 3. 状态影响，按结算顺序依次出现。
   for (const statusResult of summary.statuses) {
-    steps.push(buildStatusStep(statusResult, presentation));
+    steps.push(buildStatusStep(statusResult, presentation, summary.narrative?.statuses[statusResult.id] ?? null));
   }
 
   // 决定下一步按钮的目标。
@@ -114,14 +115,19 @@ function buildOpportunityStep(
 // 构造命运事件结果步骤。
 function buildFateStep(
   fate: NonNullable<TurnResolutionSummary['fate']>,
-  presentation: Phase4PresentationConfig
+  presentation: Phase4PresentationConfig,
+  aiFate: FateEventNarrative | null
 ): FateResolutionStepViewModel {
   const labels = presentation.labels.resultFlow;
   const fallback = presentation.fateFallbacks[fate.event?.id ?? ''];
-  const narrativeSource = fallback ? 'mock-curated' : 'template-fallback';
+  const aiDescription = aiFate?.description;
+  const narrativeSource = aiDescription ? 'ai-generated' : (fallback ? 'mock-curated' : 'template-fallback');
 
   const body: string[] = [];
-  if (fallback) {
+  if (aiDescription) {
+    // AI 变故文案优先；失败时才回退到 curated mock 或模板文案。
+    body.push(aiDescription);
+  } else if (fallback) {
     body.push(fallback.description);
   } else if (fate.event) {
     body.push(presentation.templates.fateDescription.replace('{fateName}', fate.event.name));
@@ -149,32 +155,39 @@ function buildFateStep(
 // 构造状态影响结果步骤。
 function buildStatusStep(
   statusResult: TurnResolutionSummary['statuses'][number],
-  presentation: Phase4PresentationConfig
+  presentation: Phase4PresentationConfig,
+  aiStatus: StatusEventNarrative | null
 ): StatusResolutionStepViewModel {
   const labels = presentation.labels.resultFlow;
   const fallback = presentation.statusFallbacks[statusResult.id];
-  const narrativeSource = fallback ? 'mock-curated' : 'template-fallback';
+  const aiDescription = aiStatus?.description;
+  const narrativeSource = aiDescription ? 'ai-generated' : (fallback ? 'mock-curated' : 'template-fallback');
 
   const statusName = fallback?.title ?? statusResult.name;
-  // 标题对齐线框格式：“当前状态：经济压力”。
+  // 标题对齐线框格式：”当前状态：经济压力”。
   const title = `${labels.statusStepTitle}：${statusName}`;
   const body: string[] = [];
 
-  // 先讲触发原因（为什么发生），再讲本次结果。
-  if (fallback?.triggerReasonTemplate) {
-    body.push(fallback.triggerReasonTemplate);
-  }
+  if (aiDescription) {
+    // AI 状态文案优先：一段描述同时交代触发原因与本次结果，失败时才回退到 curated mock / 模板。
+    body.push(aiDescription);
+  } else {
+    // 先讲触发原因（为什么发生），再讲本次结果。
+    if (fallback?.triggerReasonTemplate) {
+      body.push(fallback.triggerReasonTemplate);
+    }
 
-  if (statusResult.kind === 'one-time-effect' || statusResult.kind === 'per-cycle-effect') {
-    body.push(
-      fallback?.resultTemplate ??
-        presentation.templates.statusResult.replace('{statusName}', statusResult.name)
-    );
-  } else if (statusResult.kind === 'death-risk') {
-    if (statusResult.died) {
-      body.push(fallback?.deathTemplate ?? presentation.templates.statusDeath);
-    } else {
-      body.push(labels.riskStillActiveLabel);
+    if (statusResult.kind === 'one-time-effect' || statusResult.kind === 'per-cycle-effect') {
+      body.push(
+        fallback?.resultTemplate ??
+          presentation.templates.statusResult.replace('{statusName}', statusResult.name)
+      );
+    } else if (statusResult.kind === 'death-risk') {
+      if (statusResult.died) {
+        body.push(fallback?.deathTemplate ?? presentation.templates.statusDeath);
+      } else {
+        body.push(labels.riskStillActiveLabel);
+      }
     }
   }
 

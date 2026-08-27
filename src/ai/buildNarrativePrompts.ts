@@ -1,6 +1,6 @@
 import type { CreatePlayerInput } from '../shared/types/bootstrap.ts';
 import type { OpportunityCategory, OpportunityResultGrade, StatDelta } from '../shared/types/opportunity.ts';
-import type { AiConfig, CardNarrativeFacts, LifeReportFacts, NarrativeStyle, ResultNarrativeFacts } from '../shared/types/narrative.ts';
+import type { AiConfig, CardNarrativeFacts, FateNarrativeFacts, LifeReportFacts, NarrativeStyle, ResultNarrativeFacts, StatusNarrativeFacts } from '../shared/types/narrative.ts';
 
 // 组装事件牌文案的 prompt。
 export function buildCardNarrativePrompt(
@@ -42,6 +42,75 @@ export function buildResultNarrativePrompt(
       historySummary: facts.historySummary
     })
   };
+}
+
+// 组装命运事件文案的 prompt。
+export function buildFateNarrativePrompt(
+  facts: FateNarrativeFacts,
+  config: AiConfig
+): { system: string; user: string } {
+  return {
+    system: withStyle(config.fatePrompt.system, config.style),
+    user: renderTemplate(config.fatePrompt.userTemplate, {
+      playerProfile: formatPlayerProfile(facts.player),
+      age: String(facts.age),
+      eventName: facts.eventName,
+      appliedDeltas: stringifyOrNone(facts.appliedDeltas),
+      mitigatedDelta: stringifyOrNone(facts.mitigatedDelta)
+    })
+  };
+}
+
+// 组装状态触发文案的 prompt。
+export function buildStatusNarrativePrompt(
+  facts: StatusNarrativeFacts,
+  config: AiConfig
+): { system: string; user: string } {
+  return {
+    system: withStyle(config.statusPrompt.system, config.style),
+    user: renderTemplate(config.statusPrompt.userTemplate, {
+      playerProfile: formatPlayerProfile(facts.player),
+      age: String(facts.age),
+      statusName: facts.statusName,
+      statusKind: formatStatusKind(facts.kind),
+      conditions: stringifyOrNone(facts.conditions),
+      appliedDeltas: stringifyOrNone(facts.appliedDeltas),
+      statusOutcome: formatStatusOutcome(facts.kind, facts.died)
+    })
+  };
+}
+
+// 把状态类型转成中文，供 prompt 里给 AI 交代状态的性质。
+function formatStatusKind(kind: StatusNarrativeFacts['kind']): string {
+  switch (kind) {
+    case 'one-time-effect':
+      return '一次性影响';
+    case 'death-risk':
+      return '死亡风险';
+    case 'per-cycle-effect':
+      return '持续影响';
+  }
+}
+
+// 把状态的最终结果转成一句中文结论，尤其区分死亡风险是否成真。
+function formatStatusOutcome(kind: StatusNarrativeFacts['kind'], died: boolean): string {
+  if (kind === 'death-risk') {
+    return died ? '本次未能挺过，导致离世' : '仍有风险，但本次未离世';
+  }
+
+  return '本次状态影响已生效';
+}
+
+// 把数组/可空值转成 JSON 字符串；空数组或 null 统一落成「无」，避免喂给 AI 裸的 null/[]。
+function stringifyOrNone(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '无';
+  }
+  if (Array.isArray(value) && value.length === 0) {
+    return '无';
+  }
+
+  return JSON.stringify(value);
 }
 
 // 把结果等级转成中文。等级文案是 PRD 固定值，且现有 mapper 已用代码常量表达，这里保持一致。
@@ -123,7 +192,7 @@ export function buildLifeReportPrompt(
       endReasonLabel: facts.endReasonLabel,
       choices: formatChoices(facts.choices),
       discardedEvents: formatEventLines(facts.discardedEvents),
-      fateEvents: formatEventLines(facts.fateEvents),
+      fateEvents: formatFateEvents(facts.fateEvents),
       statusEvents: formatStatusEvents(facts.statusEvents),
       finalStats: facts.finalStats.map((stat) => `${stat.label}：${stat.value}`).join('\n'),
       lifeNodes: facts.lifeNodes,
@@ -159,14 +228,32 @@ function formatEventLines(events: Array<{ age: number; eventName: string }>): st
   return events.map((event) => `- ${event.age}岁·${event.eventName}`).join('\n');
 }
 
-// 把关键状态事件压成多行，死亡类状态补一句「导致离世」。
+// 把命运变故压成多行，带 AI 描述时补充一句具体叙述。
+function formatFateEvents(events: LifeReportFacts['fateEvents']): string {
+  if (events.length === 0) {
+    return '（无）';
+  }
+
+  return events
+    .map((event) => {
+      const line = `- ${event.age}岁·${event.eventName}`;
+      return event.description ? `${line}：${event.description}` : line;
+    })
+    .join('\n');
+}
+
+// 把关键状态事件压成多行，死亡类状态补一句「导致离世」，带 AI 描述时补充具体叙述。
 function formatStatusEvents(events: LifeReportFacts['statusEvents']): string {
   if (events.length === 0) {
     return '（无）';
   }
 
   return events
-    .map((event) => `- ${event.age}岁·${event.statusName}${event.died ? '（导致离世）' : ''}`)
+    .map((event) => {
+      const suffix = event.died ? '（导致离世）' : '';
+      const line = `- ${event.age}岁·${event.statusName}${suffix}`;
+      return event.description ? `${line}：${event.description}` : line;
+    })
     .join('\n');
 }
 
@@ -187,7 +274,7 @@ export function formatLifeReportFacts(facts: LifeReportFacts): string {
     formatEventLines(facts.discardedEvents),
     '',
     '命运中的变故：',
-    formatEventLines(facts.fateEvents),
+    formatFateEvents(facts.fateEvents),
     '',
     '关键境遇：',
     formatStatusEvents(facts.statusEvents),

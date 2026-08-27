@@ -27,8 +27,8 @@ function buildFacts(): LifeReportFacts {
       }
     ],
     discardedEvents: [{ age: 25, eventName: '休养身心' }],
-    fateEvents: [{ age: 30, eventName: '公司裁员' }],
-    statusEvents: [],
+    fateEvents: [{ age: 30, eventName: '公司裁员', description: '公司架构调整，你被迫离开原有岗位。' }],
+    statusEvents: [{ age: 40, statusName: '经济危机', kind: 'one-time-effect', died: false, description: '收入中断让你陷入经济压力。' }],
     finalStats: [
       { label: '认知', value: 3 },
       { label: '金钱', value: 5 }
@@ -52,6 +52,8 @@ describe('buildLifeReportPrompt', () => {
     assert.ok(prompt.user.includes('已婚、已组建家庭'));
     assert.ok(prompt.user.includes('一家AI公司向你发出邀请')); // 事件牌文案进入报告素材
     assert.ok(prompt.user.includes('你成功入职，收入提升')); // 结果文案进入报告素材
+    assert.ok(prompt.user.includes('公司架构调整')); // 命运变故描述进入报告素材
+    assert.ok(prompt.user.includes('收入中断让你陷入经济压力')); // 状态描述进入报告素材
     assert.ok(!prompt.user.includes('{choices}'));
     assert.ok(!prompt.user.includes('{finalStats}'));
     assert.ok(!prompt.user.includes('{playerProfile}'));
@@ -80,6 +82,9 @@ describe('formatLifeReportFacts', () => {
     assert.ok(text.includes('休养身心'));
     assert.ok(text.includes('命运中的变故'));
     assert.ok(text.includes('公司裁员'));
+    assert.ok(text.includes('公司架构调整')); // 命运变故描述进入导出文本
+    assert.ok(text.includes('关键境遇'));
+    assert.ok(text.includes('收入中断让你陷入经济压力')); // 状态描述进入导出文本
     assert.ok(text.includes('最终状态'));
     assert.ok(text.includes('认知：3'));
   });

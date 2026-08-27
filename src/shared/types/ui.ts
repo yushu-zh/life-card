@@ -19,6 +19,9 @@ export interface Phase4PresentationConfig {
       nicknamePlaceholder: string;
       appId: string;
       appIdPlaceholder: string;
+      appIdHint: string;
+      deepseekApiKey: string;
+      deepseekApiKeyPlaceholder: string;
       skillTags: string;
       skillTagsPlaceholder: string;
       skillTagsAction: string;
@@ -214,6 +217,9 @@ export interface CreatePlayerFieldLabels {
   nicknamePlaceholder: string;
   appId: string;
   appIdPlaceholder: string;
+  appIdHint: string;
+  deepseekApiKey: string;
+  deepseekApiKeyPlaceholder: string;
   skillTags: string;
   skillTagsPlaceholder: string;
   skillTagsAction: string;
@@ -230,6 +236,8 @@ export interface CreatePlayerFieldLabels {
 export interface CreatePlayerFieldErrors {
   nickname?: string;
   appId?: string;
+  deepseekApiKey?: string;
+  aiCredential?: string;
   skillTags?: string;
   wishes?: string;
   abilities?: string;
@@ -241,6 +249,7 @@ export interface CreatePlayerViewModel {
   labels: CreatePlayerFieldLabels;
   draft: CreatePlayerInput;
   appId: string;
+  deepseekApiKey: string;
   limits: {
     skillTagLimit: number;
     wishLimit: number;

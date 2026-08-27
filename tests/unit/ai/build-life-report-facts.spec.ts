@@ -64,7 +64,9 @@ describe('buildLifeReportFacts', () => {
     const snapshot = structuredClone(phase4MockScenarios.lifeReportFallback.snapshot);
     snapshot.records.lifeHistory[0].narrative = {
       card: { description: '一家AI公司向你发出邀请，你决定接受这份工作。' },
-      result: { description: '你成功入职，收入提升，经验增长。' }
+      result: { description: '你成功入职，收入提升，经验增长。' },
+      fate: null,
+      statuses: {}
     };
 
     const facts = buildLifeReportFacts(snapshot, opportunityConfig, presentation);
@@ -72,5 +74,41 @@ describe('buildLifeReportFacts', () => {
     const firstChoice = facts.choices[0];
     assert.strictEqual(firstChoice.cardDescription, '一家AI公司向你发出邀请，你决定接受这份工作。');
     assert.strictEqual(firstChoice.resultDescription, '你成功入职，收入提升，经验增长。');
+  });
+
+  it('carries the AI narrative text into fate and status events', () => {
+    const snapshot = structuredClone(phase4MockScenarios.lifeReportFallback.snapshot);
+    // 第二个历史条目已经触发命运事件「公司裁员」，这里补上 AI 变故文案与状态文案。
+    const fateEntry = snapshot.records.lifeHistory[1];
+    fateEntry.narrative = {
+      card: null,
+      result: null,
+      fate: { description: '公司架构调整，你被迫离开原有岗位。' },
+      statuses: {
+        'economic-crisis': { description: '收入中断让你陷入经济压力。' }
+      }
+    };
+    // 给第二个历史条目补一条状态，验证状态描述也能被带出。
+    fateEntry.statuses = [
+      {
+        id: 'economic-crisis',
+        name: '经济危机',
+        kind: 'one-time-effect',
+        resolutionMode: 'once-per-game',
+        firstTrigger: true,
+        conditions: [{ key: 'money', operator: '<=', threshold: 0, actual: 0 }],
+        appliedDeltas: [{ key: 'happiness', amount: -1 }]
+      }
+    ];
+
+    const facts = buildLifeReportFacts(snapshot, opportunityConfig, presentation);
+
+    const fateEvent = facts.fateEvents.find((f) => f.eventName === '公司裁员');
+    assert.ok(fateEvent);
+    assert.strictEqual(fateEvent.description, '公司架构调整，你被迫离开原有岗位。');
+
+    const statusEvent = facts.statusEvents.find((s) => s.statusName === '经济危机');
+    assert.ok(statusEvent);
+    assert.strictEqual(statusEvent.description, '收入中断让你陷入经济压力。');
   });
 });

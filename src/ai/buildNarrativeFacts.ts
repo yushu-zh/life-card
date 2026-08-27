@@ -1,8 +1,10 @@
 import type { GameSessionSnapshot } from '../shared/types/game-session.ts';
 import type { OpportunityEventConfig, OpportunityEventDefinition, OpportunityResultGrade, StatDelta } from '../shared/types/opportunity.ts';
+import type { FateResolutionSummary } from '../shared/types/fate.ts';
+import type { StatusResult } from '../shared/types/status.ts';
 import type { TurnSystemConfig } from '../shared/types/turn.ts';
 import type { Phase4PresentationConfig } from '../shared/types/ui.ts';
-import type { CardNarrativeFacts, LifeReportFacts, ResultNarrativeFacts } from '../shared/types/narrative.ts';
+import type { CardNarrativeFacts, FateNarrativeFacts, LifeReportFacts, ResultNarrativeFacts, StatusNarrativeFacts } from '../shared/types/narrative.ts';
 import { formatCategory, formatGrade } from './buildNarrativePrompts.ts';
 
 // 把快照 + 事件骨架收拢成事件牌文案的 prompt 事实。
@@ -46,6 +48,37 @@ export function buildResultNarrativeFacts(
     appliedDeltas,
     historySummary: buildHistorySummary(snapshot),
     cardDescription
+  };
+}
+
+// 把命运结算结果收拢成命运文案的 prompt 事实。
+export function buildFateNarrativeFacts(
+  snapshot: GameSessionSnapshot,
+  fateSummary: FateResolutionSummary
+): FateNarrativeFacts {
+  return {
+    player: snapshot.player,
+    age: snapshot.progression.age,
+    eventName: fateSummary.event?.name ?? '',
+    appliedDeltas: fateSummary.appliedDeltas,
+    mitigatedDelta: fateSummary.mitigatedDelta
+  };
+}
+
+// 把状态结算结果收拢成状态文案的 prompt 事实。
+export function buildStatusNarrativeFacts(
+  snapshot: GameSessionSnapshot,
+  statusResult: StatusResult
+): StatusNarrativeFacts {
+  return {
+    player: snapshot.player,
+    age: snapshot.progression.age,
+    statusName: statusResult.name,
+    kind: statusResult.kind,
+    conditions: statusResult.conditions,
+    // 死亡风险状态没有数值变化字段，这里按需兜底为空数组。
+    appliedDeltas: 'appliedDeltas' in statusResult ? statusResult.appliedDeltas : [],
+    died: statusResult.kind === 'death-risk' ? statusResult.died : false
   };
 }
 
@@ -138,7 +171,12 @@ export function buildLifeReportFacts(
     }
 
     if (entry.fate?.triggered && entry.fate.event) {
-      fateEvents.push({ age: entry.context.age, eventName: entry.fate.event.name });
+      fateEvents.push({
+        age: entry.context.age,
+        eventName: entry.fate.event.name,
+        // 带上 Phase 6 生成的命运变故文案，让报告能引用这一段具象变故。
+        description: entry.narrative?.fate?.description ?? null
+      });
     }
 
     for (const status of entry.statuses) {
@@ -146,7 +184,9 @@ export function buildLifeReportFacts(
         age: entry.context.age,
         statusName: status.name,
         kind: status.kind,
-        died: status.kind === 'death-risk' ? status.died : false
+        died: status.kind === 'death-risk' ? status.died : false,
+        // 带上 Phase 6 生成的状态文案，让报告能引用这一段具体境遇。
+        description: entry.narrative?.statuses[status.id]?.description ?? null
       });
     }
   }

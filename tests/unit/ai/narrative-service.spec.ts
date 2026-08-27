@@ -4,11 +4,14 @@ import { describe, it } from 'node:test';
 import {
   createMockNarrativeTransport,
   generateEventCardNarrative,
+  generateFateNarrative,
   generateOpportunityResultNarrative,
+  generateStatusNarrative,
+  resolveAiProvider,
   type NarrativeTransport
 } from '../../../src/ai/narrativeService.ts';
 import { loadAiConfig } from '../../../src/config/loaders/loadAiConfig.ts';
-import type { CardNarrativeFacts, ResultNarrativeFacts } from '../../../src/shared/types/narrative.ts';
+import type { CardNarrativeFacts, FateNarrativeFacts, ResultNarrativeFacts, StatusNarrativeFacts } from '../../../src/shared/types/narrative.ts';
 
 const config = loadAiConfig();
 
@@ -30,6 +33,24 @@ const resultFacts: ResultNarrativeFacts = {
   appliedDeltas: [{ key: 'health', amount: 2 }],
   historySummary: '暂无',
   cardDescription: '你决定开始健身。'
+};
+
+const fateFacts: FateNarrativeFacts = {
+  player: cardFacts.player,
+  age: 30,
+  eventName: '公司裁员',
+  appliedDeltas: [{ key: 'money', amount: -2 }],
+  mitigatedDelta: null
+};
+
+const statusFacts: StatusNarrativeFacts = {
+  player: cardFacts.player,
+  age: 40,
+  statusName: '经济危机',
+  kind: 'one-time-effect',
+  conditions: [{ key: 'money', operator: '<=', threshold: 0, actual: 0 }],
+  appliedDeltas: [{ key: 'happiness', amount: -1 }],
+  died: false
 };
 
 // 返回固定文本的传输替身。
@@ -75,5 +96,73 @@ describe('generateOpportunityResultNarrative', () => {
 
     assert.ok(narrative);
     assert.strictEqual(narrative.description, '这次锻炼很成功，你养成了好习惯，健康提升。');
+  });
+});
+
+describe('generateFateNarrative', () => {
+  it('returns parsed narrative on valid transport', async () => {
+    const raw = JSON.stringify({ description: '公司架构调整，你被迫离开原有岗位。' });
+    const narrative = await generateFateNarrative(fateFacts, config, createFixedTransport(raw));
+
+    assert.ok(narrative);
+    assert.strictEqual(narrative.description, '公司架构调整，你被迫离开原有岗位。');
+  });
+
+  it('returns null when transport throws', async () => {
+    const narrative = await generateFateNarrative(fateFacts, config, createMockNarrativeTransport());
+    assert.strictEqual(narrative, null);
+  });
+
+  it('returns null when disabled', async () => {
+    const disabled = { ...config, enabled: false };
+    const narrative = await generateFateNarrative(fateFacts, disabled, createFixedTransport('{}'));
+    assert.strictEqual(narrative, null);
+  });
+});
+
+describe('generateStatusNarrative', () => {
+  it('returns parsed narrative on valid transport', async () => {
+    const raw = JSON.stringify({ description: '收入中断让你陷入经济压力。' });
+    const narrative = await generateStatusNarrative(statusFacts, config, createFixedTransport(raw));
+
+    assert.ok(narrative);
+    assert.strictEqual(narrative.description, '收入中断让你陷入经济压力。');
+  });
+
+  it('returns null when transport throws', async () => {
+    const narrative = await generateStatusNarrative(statusFacts, config, createMockNarrativeTransport());
+    assert.strictEqual(narrative, null);
+  });
+});
+
+describe('resolveAiProvider', () => {
+  it('prefers friday when both app id and deepseek api key are filled', () => {
+    const result = resolveAiProvider('app-id-123', 'sk-abc');
+
+    assert.deepEqual(result, { provider: 'friday', key: 'app-id-123' });
+  });
+
+  it('uses friday when only app id is filled', () => {
+    const result = resolveAiProvider('app-id-123', '');
+
+    assert.deepEqual(result, { provider: 'friday', key: 'app-id-123' });
+  });
+
+  it('uses deepseek when only api key is filled', () => {
+    const result = resolveAiProvider('', 'sk-abc');
+
+    assert.deepEqual(result, { provider: 'deepseek', key: 'sk-abc' });
+  });
+
+  it('trims surrounding whitespace', () => {
+    const result = resolveAiProvider('  ', '  sk-abc  ');
+
+    assert.deepEqual(result, { provider: 'deepseek', key: 'sk-abc' });
+  });
+
+  it('returns null when neither is filled', () => {
+    const result = resolveAiProvider('  ', '  ');
+
+    assert.strictEqual(result, null);
   });
 });

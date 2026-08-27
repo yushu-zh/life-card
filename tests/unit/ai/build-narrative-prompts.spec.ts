@@ -3,11 +3,13 @@ import { describe, it } from 'node:test';
 
 import {
   buildCardNarrativePrompt,
+  buildFateNarrativePrompt,
   buildResultNarrativePrompt,
+  buildStatusNarrativePrompt,
   formatGrade
 } from '../../../src/ai/buildNarrativePrompts.ts';
 import { loadAiConfig } from '../../../src/config/loaders/loadAiConfig.ts';
-import type { CardNarrativeFacts, ResultNarrativeFacts } from '../../../src/shared/types/narrative.ts';
+import type { CardNarrativeFacts, FateNarrativeFacts, ResultNarrativeFacts, StatusNarrativeFacts } from '../../../src/shared/types/narrative.ts';
 
 const config = loadAiConfig();
 
@@ -58,6 +60,59 @@ describe('buildResultNarrativePrompt', () => {
     assert.ok(prompt.user.includes('成功'));
     assert.ok(prompt.user.includes('money'));
     assert.ok(prompt.user.includes('一家AI公司向你发出邀请')); // 事件描述进入上下文，让结果与其呼应
+  });
+});
+
+describe('buildFateNarrativePrompt', () => {
+  it('includes event name, deltas and mitigation fallback', () => {
+    const facts: FateNarrativeFacts = {
+      player: cardFacts.player,
+      age: 30,
+      eventName: '公司裁员',
+      appliedDeltas: [{ key: 'money', amount: -2 }],
+      mitigatedDelta: null
+    };
+    const prompt = buildFateNarrativePrompt(facts, config);
+
+    assert.ok(prompt.user.includes('公司裁员'));
+    assert.ok(prompt.user.includes('money'));
+    assert.ok(prompt.user.includes('无')); // 无应变减免时落「无」
+  });
+});
+
+describe('buildStatusNarrativePrompt', () => {
+  it('includes status name, kind and outcome', () => {
+    const facts: StatusNarrativeFacts = {
+      player: cardFacts.player,
+      age: 40,
+      statusName: '经济危机',
+      kind: 'one-time-effect',
+      conditions: [{ key: 'money', operator: '<=', threshold: 0, actual: 0 }],
+      appliedDeltas: [{ key: 'happiness', amount: -1 }],
+      died: false
+    };
+    const prompt = buildStatusNarrativePrompt(facts, config);
+
+    assert.ok(prompt.user.includes('经济危机'));
+    assert.ok(prompt.user.includes('一次性影响'));
+    assert.ok(prompt.user.includes('money'));
+    assert.ok(prompt.user.includes('已生效'));
+  });
+
+  it('marks death outcome for death-risk status', () => {
+    const facts: StatusNarrativeFacts = {
+      player: cardFacts.player,
+      age: 50,
+      statusName: '健康危机',
+      kind: 'death-risk',
+      conditions: [{ key: 'health', operator: '<=', threshold: -1, actual: -2 }],
+      appliedDeltas: [],
+      died: true
+    };
+    const prompt = buildStatusNarrativePrompt(facts, config);
+
+    assert.ok(prompt.user.includes('死亡风险'));
+    assert.ok(prompt.user.includes('导致离世'));
   });
 });
 

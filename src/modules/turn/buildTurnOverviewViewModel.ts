@@ -66,7 +66,7 @@ export function buildTurnOverviewViewModel(
   };
 }
 
-// 构造顶部状态区：能力、资源、结算指标。
+// 构造顶部状态区：能力、资源、人生指标。
 function buildStats(
   snapshot: GameSessionSnapshot,
   presentation: Phase4PresentationConfig
