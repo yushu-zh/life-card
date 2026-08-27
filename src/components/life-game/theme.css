@@ -456,10 +456,11 @@ body {
   justify-self: end;
 }
 
-/* 换牌按钮：文案变短后同步收窄横向内边距，并使用衬线字体 */
+/* 换牌按钮：文案变为「换牌」后进一步收窄、缩小，更轻量地贴右侧排列 */
 .life-game__turn-header-action .life-game__secondary-button {
-  padding: var(--space-xs) var(--space-sm);
+  padding: 0.1875rem 0.375rem;
   font-family: var(--font-serif);
+  font-size: 0.8125rem;
   letter-spacing: 0.02em;
 }
 
@@ -1121,30 +1122,6 @@ body {
   color: var(--text-muted);
 }
 
-/* 最终五维：淡金胶囊横向排布 */
-.life-game__data-hero-outcomes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-sm);
-  margin-top: var(--space-md);
-}
-
-.life-game__data-hero-outcome {
-  padding: var(--space-xs) var(--space-md);
-  background: rgba(217, 168, 78, 0.07);
-  border: 1px solid rgba(217, 168, 78, 0.22);
-  border-radius: var(--radius-pill);
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-}
-
-.life-game__data-hero-outcome strong {
-  color: var(--gold-bright);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
 /* 「机会 vs 选择」对比表：类别名 + 出现占比条 + 选择占比条 */
 .life-game__data-balance-head,
 .life-game__data-balance-row {
@@ -1211,23 +1188,67 @@ body {
   background: rgba(255, 255, 255, 0.22);
 }
 
-/* 模板洞察与数据描述：左侧金边的引述样式 */
+/* 模板洞察与数据描述：居中衬线引述，上方一道渐隐金线作装饰，不用条框 */
 .life-game__data-insight,
 .life-game__data-quote {
-  margin: var(--space-md) 0 0;
-  padding: var(--space-sm) var(--space-md);
-  border-left: 2px solid var(--gold-dim);
-  background: rgba(217, 168, 78, 0.05);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin: var(--space-lg) 0 0;
+  padding: 0 var(--space-md);
+  border: none;
+  background: none;
+  font-family: var(--font-serif);
   font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.7;
+  letter-spacing: 0.03em;
+  color: var(--gold-dim);
+  line-height: 1.9;
+  text-align: center;
+}
+
+.life-game__data-insight::before,
+.life-game__data-quote::before {
+  content: "";
+  display: block;
+  width: 2.5rem;
+  height: 1px;
+  margin: 0 auto var(--space-sm);
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
 }
 
 .life-game__data-quote {
+  font-size: 1.0625rem;
+  color: var(--gold-bright);
+}
+
+/* 骰运对比：左侧次数 + 右侧解释，逐行排布 */
+.life-game__data-dice-verdict {
+  display: flex;
+  flex-direction: column;
+}
+
+.life-game__data-dice-verdict-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+}
+
+.life-game__data-dice-verdict-row + .life-game__data-dice-verdict-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.life-game__data-dice-verdict-count {
+  flex-shrink: 0;
+  min-width: 3.5rem;
   font-family: var(--font-serif);
-  letter-spacing: 0.02em;
-  color: var(--text-primary);
+  font-size: 1.0625rem;
+  color: var(--gold-primary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.life-game__data-dice-verdict-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
 
 /* 小节内的小标题（你最常错过的机会 / 成长发生阶段等） */

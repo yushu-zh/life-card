@@ -38,7 +38,7 @@ export function LifeStatsPanel({ stats }: LifeStatsPanelProps) {
 // ===== 头部：一生的关键计数 =====
 
 function HeaderSection({ stats }: LifeStatsPanelProps) {
-  const { header, finalOutcomes } = stats;
+  const { header } = stats;
   return (
     <section className="life-game__data-hero">
       <h2 className="life-game__data-hero-title">{header.nickname} 的一生</h2>
@@ -52,13 +52,6 @@ function HeaderSection({ stats }: LifeStatsPanelProps) {
         {header.criticalSuccessCount} 次大成功 · {header.failureCount} 次失败 · {header.rerollCount} 次命运转折 ·
         经历 {header.crisisCount} 次人生危机 · {header.fateEventCount} 次命运事件
       </p>
-      <div className="life-game__data-hero-outcomes">
-        {finalOutcomes.map((outcome) => (
-          <span key={outcome.key} className="life-game__data-hero-outcome">
-            {outcome.label} <strong>{outcome.value}</strong>
-          </span>
-        ))}
-      </div>
     </section>
   );
 }
@@ -167,7 +160,7 @@ function TrajectorySection({ stats }: LifeStatsPanelProps) {
   return (
     <section className="life-game__report-section">
       <h2 className="life-game__report-heading">一生的选择轨迹</h2>
-      <p className="life-game__data-caption">每个回合结束后的累计选择占比——路径是怎样形成的</p>
+      <p className="life-game__data-caption">每个回合结束后的累计选择占比</p>
       <svg className="life-game__data-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="一生的选择轨迹">
         {/* 25% / 50% / 75% 参考虚线 */}
         {[0.25, 0.5, 0.75].map((ratio) => (
@@ -283,16 +276,17 @@ function AbilitiesSection({ stats }: LifeStatsPanelProps) {
   );
 }
 
-// ===== 一生的骰运：分布、平均点与「全 7 反事实」 =====
+// ===== 一生的检定：凭能力，还是凭运气 =====
 
 function DiceSection({ dice }: { dice: NonNullable<LifeStatsViewModel['dice']> }) {
   const maxCount = Math.max(1, ...dice.histogram.map((bucket) => bucket.count));
 
   return (
     <section className="life-game__report-section">
-      <h2 className="life-game__report-heading">一生的骰运</h2>
+      <h2 className="life-game__report-heading">这一生的能力和运气</h2>
+      <p className="life-game__data-caption">每一次事件检定 = 两颗骰子的运气 + 你当时的能力值</p>
       <p className="life-game__data-hero-line">
-        投掷 {dice.rollCount} 次 · 平均骰点 {dice.averageSum.toFixed(1)} · 理论平均 {dice.expectedSum.toFixed(1)}
+        共投掷 {dice.rollCount} 次 · 平均骰点 {dice.averageSum.toFixed(1)} · 理论平均 {dice.expectedSum.toFixed(1)}
       </p>
       <div className="life-game__data-histogram">
         {dice.histogram.map((bucket) => (
@@ -306,16 +300,27 @@ function DiceSection({ dice }: { dice: NonNullable<LifeStatsViewModel['dice']> }
           </div>
         ))}
       </div>
-      <p className="life-game__data-caption">如果所有骰子都固定为 7（平均运气）：</p>
-      <p className="life-game__data-hero-line">
-        实际结果更好 {dice.betterCount} 次 · 相同 {dice.sameCount} 次 · 更差 {dice.worseCount} 次
+      <p className="life-game__data-caption">
+        如果每一次骰点都是平均的 7 点，只凭你当时的能力：
       </p>
-      {dice.betterCount > 0 && (
-        <p className="life-game__data-insight">其中 {dice.betterCount} 次，是骰子真正帮你跨过了门槛。</p>
-      )}
-      {dice.worseCount > 0 && (
-        <p className="life-game__data-insight">也有 {dice.worseCount} 次，骰点把你拖过了门槛。</p>
-      )}
+      <div className="life-game__data-dice-verdict">
+        {/* 结果不变：运气没有影响，全凭能力 */}
+        <div className="life-game__data-dice-verdict-row">
+          <span className="life-game__data-dice-verdict-count">{dice.sameCount} 次</span>
+          <span className="life-game__data-dice-verdict-text">结果与原来相同，都是你能力的证明</span>
+        </div>
+        {/* 实际比全 7 更好：是运气替能力够不到的你完成了跨越 */}
+        <div className="life-game__data-dice-verdict-row">
+          <span className="life-game__data-dice-verdict-count">{dice.betterCount} 次</span>
+          <span className="life-game__data-dice-verdict-text">只靠能力无法达到，是运气替你跨过了门槛</span>
+        </div>
+        {/* 实际比全 7 更差：本可凭能力拿到的结果被骰点拉低 */}
+        <div className="life-game__data-dice-verdict-row">
+          <span className="life-game__data-dice-verdict-count">{dice.worseCount} 次</span>
+          <span className="life-game__data-dice-verdict-text">本能凭能力拿到，却因运气不佳而失利</span>
+        </div>
+      </div>
+      <blockquote className="life-game__data-quote">{dice.verdict}</blockquote>
     </section>
   );
 }

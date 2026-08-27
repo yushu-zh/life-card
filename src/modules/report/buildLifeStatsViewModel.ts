@@ -361,8 +361,23 @@ function buildDice(
     histogram: [...histogram.entries()].map(([sum, count]) => ({ sum, count })),
     betterCount,
     sameCount,
-    worseCount
+    worseCount,
+    verdict: buildDiceVerdict(betterCount, sameCount, worseCount)
   };
+}
+
+// 模板结论（非 AI）：这一生更多靠能力还是靠运气走完检定。
+function buildDiceVerdict(betterCount: number, sameCount: number, worseCount: number): string {
+  if (betterCount === 0 && worseCount === 0) {
+    return '这一生，你的每一次检定结果都与能力完全相称。运气从未插手。';
+  }
+  if (betterCount > worseCount) {
+    return '总的来看，这一生运气站在你这边。';
+  }
+  if (worseCount > betterCount) {
+    return '总的来看，这一生运气多少拖了你的后腿。';
+  }
+  return '总的来看，运气没有偏袒谁，你几乎全凭自己的能力走完了一生。';
 }
 
 // ===== 金钱与精力：一生的起伏 =====

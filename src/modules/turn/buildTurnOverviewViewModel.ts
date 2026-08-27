@@ -47,7 +47,7 @@ export function buildTurnOverviewViewModel(
       reroll: {
         canUse: activeTurn.rerollCount < turnSystemConfig.redrawLimitPerTurn,
         used: activeTurn.rerollCount > 0,
-        // 未换牌时展示剩余次数，对齐参考图“换牌（剩余1次）”。
+        // 未换牌时展示换牌入口文案；{remaining} 占位可选，当前文案不再展示剩余次数。
         label: activeTurn.rerollCount > 0
           ? labels.rerollUsed
           : labels.rerollAction.replace(

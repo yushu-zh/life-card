@@ -133,20 +133,6 @@ function ArticleTab({
         </section>
       ))}
 
-      <section className="life-game__report-section">
-        <h2 className="life-game__report-heading">{vm.finalStatsHeading}</h2>
-        <div className="life-game__report-stats">
-          <div className="life-game__stats-items">
-            {vm.finalStats.map((stat) => (
-              <div key={stat.key} className="life-game__stats-item">
-                <span className="life-game__stats-label">{stat.label}</span>
-                <span className="life-game__stats-value">{stat.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <div className="life-game__report-actions">
         <button className="life-game__secondary-button" onClick={onRetry}>
           {retryLabel}

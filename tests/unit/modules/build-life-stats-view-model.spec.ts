@@ -122,6 +122,8 @@ describe('buildLifeStatsViewModel', () => {
     assert.strictEqual(vm.dice.histogram.find((bucket) => bucket.sum === 7)!.count, 1);
     assert.strictEqual(vm.dice.histogram.find((bucket) => bucket.sum === 12)!.count, 1);
     assert.strictEqual(vm.dice.histogram.find((bucket) => bucket.sum === 2)!.count, 1);
+    // 帮了 1 次也拖了 1 次：运气总体没有偏袒谁。
+    assert.strictEqual(vm.dice.verdict, '总的来看，运气没有偏袒谁，你几乎全凭自己的能力走完了一生。');
   });
 
   it('finds the most missed events and renders the template sentence', () => {

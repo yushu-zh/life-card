@@ -440,6 +440,8 @@ export interface LifeStatsDice {
   betterCount: number;
   sameCount: number;
   worseCount: number;
+  // 模板结论：这一生更多靠能力还是靠运气。
+  verdict: string;
 }
 
 // 资源曲线：横轴年龄、纵轴数值，含起点与终点。

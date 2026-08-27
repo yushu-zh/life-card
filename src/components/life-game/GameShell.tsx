@@ -77,7 +77,7 @@ const PENDING_COPY: Record<
   'loading-turn': { title: '正在加载回合…', text: '命运正在排布...' },
   rerolling: { title: '正在换牌…', text: '重新洗牌中...' },
   resolving: { title: '正在结算回合…', text: '正在判定结果...' },
-  'generating-report': { title: '正在生成人生报告…', text: 'AI 正在回顾你的一生' }
+  'generating-report': { title: '正在生成人生报告…', text: 'AI 正在回顾你的一生...' }
 };
 
 // 单页面游戏壳：负责阶段切换、调用 domain 入口、维护 UI 状态与当前快照。
