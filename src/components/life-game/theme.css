@@ -51,6 +51,17 @@ body,
   line-height: 1.6;
 }
 
+/* 移动端固定视口：禁止横向滑动与缩放，仅允许纵向滚动 */
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+  /* 仅允许纵向平移手势，阻止双指缩放与横向拖动 */
+  touch-action: pan-y;
+  /* 阻止横向手势触发浏览器前进/后退或页面平移 */
+  overscroll-behavior-x: none;
+}
+
 .life-game {
   min-height: 100vh;
   padding: var(--space-lg) var(--space-md) var(--space-2xl);
