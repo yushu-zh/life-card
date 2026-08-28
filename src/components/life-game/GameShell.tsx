@@ -97,6 +97,9 @@ export function GameShell() {
 
   const [currentSnapshot, setCurrentSnapshot] = useState<GameSessionSnapshot | null>(null);
   const [lastResolution, setLastResolution] = useState<TurnResolutionSummary | null>(null);
+  // 「开始人生」失败时的用户可见错误信息：避免报错被静默吞掉，
+  // 在低版本浏览器（缺 structuredClone / crypto.randomUUID 等）上表现为「点了没反应」。
+  const [startError, setStartError] = useState<string | null>(null);
   // AI 人生报告是否正在后台生成：进入报告页后立即并发请求，
   // 用户浏览第一页数据统计期间第二页文章同步就绪，无需等待。
   const [isReportGenerating, setIsReportGenerating] = useState(false);
@@ -195,6 +198,8 @@ export function GameShell() {
 
   // 开始人生：校验、创建新游戏并立即发牌。
   const handleStart = useCallback(async () => {
+    // 清空上一次失败遗留的错误提示。
+    setStartError(null);
     setUiState((prev) => ({ ...prev, pending: 'creating' }));
     try {
       // 先持久化 App ID 与 DeepSeek API Key，下次创建角色时自动回填。
@@ -226,6 +231,11 @@ export function GameShell() {
       }));
     } catch (error) {
       setUiState((prev) => ({ ...prev, pending: null }));
+      // 不能静默吞错：老浏览器兼容问题、存储不可用等场景，
+      // 用户看到的只是「点了没反应」，必须把错误抛到界面上。
+      setStartError(
+        `开始人生失败：${error instanceof Error ? error.message : String(error)}。请尝试换用 Chrome/Safari 后重试。`
+      );
       // eslint-disable-next-line no-console
       console.error('创建游戏失败', error);
     }
@@ -406,6 +416,7 @@ export function GameShell() {
     setCurrentSnapshot(null);
     setLastResolution(null);
     setCardNarratives({});
+    setStartError(null);
     setUiState({
       phase: 'create-player',
       pending: null,
@@ -537,6 +548,16 @@ export function GameShell() {
           title={PENDING_COPY[uiState.pending].title}
           loadingText={PENDING_COPY[uiState.pending].text}
         />
+      )}
+      {/* 开始人生失败的错误横幅：老浏览器兼容性问题等运行时异常在此可见 */}
+      {startError && (
+        <div
+          className="life-game__container"
+          role="alert"
+          style={{ padding: 'var(--space-md)', color: '#ff8a80' }}
+        >
+          {startError}
+        </div>
       )}
       {renderContent()}
     </main>

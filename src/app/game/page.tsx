@@ -1,3 +1,7 @@
+// 运行时兜底必须最先执行：structuredClone / crypto.randomUUID 这些 API
+// 老安卓内核没有，若先 import 业务模块，模块顶层一调用就会直接 throw。
+import '../../shared/utils/polyfills.ts';
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
