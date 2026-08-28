@@ -111,6 +111,7 @@ describe('createInitialSnapshot', () => {
       },
       player: {
         nickname: '小宇',
+        gender: '',
         skillTags: ['写作', '分析'],
         education: '本科',
         industry: '互联网',

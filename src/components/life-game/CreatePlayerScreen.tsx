@@ -121,6 +121,21 @@ export function CreatePlayerScreen({
         {vm.errors.nickname && <div className="life-game__form-error">{vm.errors.nickname}</div>}
       </div>
 
+      {/* 性别为自由文本，接受一切输入；留空时由 AI 结合其他背景合理推测 */}
+      <div className="life-game__form-group">
+        <label className="life-game__form-label" htmlFor="gender">
+          {vm.labels.gender}
+        </label>
+        <input
+          id="gender"
+          className="life-game__input"
+          {...ANDROID_SAFE_INPUT_PROPS}
+          placeholder={vm.labels.genderPlaceholder}
+          value={profile.gender ?? ''}
+          onChange={(e) => updateProfile({ gender: e.target.value })}
+        />
+      </div>
+
       <div className="life-game__form-group">
         <label className="life-game__form-label" htmlFor="app-id">
           {vm.labels.appId}

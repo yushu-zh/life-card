@@ -17,6 +17,8 @@ export interface Phase4PresentationConfig {
       subtitle: string;
       nickname: string;
       nicknamePlaceholder: string;
+      gender: string;
+      genderPlaceholder: string;
       appId: string;
       appIdPlaceholder: string;
       appIdHint: string;
@@ -216,6 +218,8 @@ export interface UiRiskHint {
 export interface CreatePlayerFieldLabels {
   nickname: string;
   nicknamePlaceholder: string;
+  gender: string;
+  genderPlaceholder: string;
   appId: string;
   appIdPlaceholder: string;
   appIdHint: string;

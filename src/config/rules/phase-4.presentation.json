@@ -5,6 +5,8 @@
       "subtitle": "",
       "nickname": "昵称",
       "nicknamePlaceholder": "输入一个称呼",
+      "gender": "性别",
+      "genderPlaceholder": "任意填写，例如：男、女、保密",
       "appId": "AI App ID",
       "appIdPlaceholder": "输入 AI 服务的 App ID",
       "appIdHint": "美团内部 AI，需连接内网使用",

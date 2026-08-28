@@ -3,6 +3,8 @@ export type AbilityKey = 'cognition' | 'execution' | 'social' | 'creativity' | '
 export interface CreatePlayerInput {
   profile: {
     nickname: string;
+    // 性别为自由文本，接受一切输入；可选，旧存档没有此字段时按未填写处理。
+    gender?: string;
     skillTags: string[];
     education: string;
     industry: string;

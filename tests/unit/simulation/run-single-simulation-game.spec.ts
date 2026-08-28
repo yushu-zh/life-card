@@ -26,7 +26,8 @@ describe('runSingleSimulationGame', () => {
   });
 
   it('提前死亡时 earlyDeath 为 true', async () => {
-    const result = await runSingleSimulationGame({ strategyId: 'random', gameIndex: 1, config, seed: 'probe-273' });
+    // 该种子在现行事件配置下必然提前死亡；事件候选池变更（如年龄门槛调整）会使旧种子失效，需重新扫描。
+    const result = await runSingleSimulationGame({ strategyId: 'random', gameIndex: 1, config, seed: 'probe-30' });
 
     assert.equal(result.invalid, false);
     assert.equal(result.earlyDeath, true);

@@ -10,6 +10,7 @@ function createValidCreatePlayerInput(): CreatePlayerInput {
   return {
     profile: {
       nickname: '小明',
+      gender: '男',
       skillTags: ['编程', '写作'],
       education: '本科',
       industry: '互联网',

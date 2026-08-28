@@ -42,6 +42,8 @@ export function buildCreatePlayerViewModel(
     labels: {
       nickname: labels.nickname,
       nicknamePlaceholder: labels.nicknamePlaceholder,
+      gender: labels.gender,
+      genderPlaceholder: labels.genderPlaceholder,
       appId: labels.appId,
       appIdPlaceholder: labels.appIdPlaceholder,
       appIdHint: labels.appIdHint,

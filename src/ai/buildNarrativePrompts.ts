@@ -170,6 +170,8 @@ function formatPlayerProfile(profile: CreatePlayerInput['profile']): string {
 
   const parts = [
     field('昵称', profile.nickname),
+    // 性别是可选字段，旧存档或玩家跳过时为 undefined，同样走「未填写→合理推测」逻辑。
+    field('性别', profile.gender ?? ''),
     field('学历', profile.education),
     field('行业', profile.industry),
     listField('技能', profile.skillTags),

@@ -20,6 +20,7 @@ export function createInitialSnapshot(
     },
     player: {
       nickname: input.profile.nickname,
+      gender: input.profile.gender ?? '',
       skillTags: [...input.profile.skillTags],
       education: input.profile.education,
       industry: input.profile.industry,

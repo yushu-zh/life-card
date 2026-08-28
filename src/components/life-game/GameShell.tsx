@@ -54,6 +54,7 @@ import './theme.css';
 const EMPTY_DRAFT: CreatePlayerInput = {
   profile: {
     nickname: '',
+    gender: '',
     skillTags: [],
     education: '',
     industry: '',

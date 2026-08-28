@@ -47,7 +47,8 @@ describe('dealTurnOffer', () => {
 
   it('skips events that have already reached the max issued count through selected or discarded records', () => {
     const snapshot = createBaseSnapshot();
-    snapshot.progression.age = 40;
+    // 55 岁时恋爱/婚姻/组建家庭都已超龄，不会干扰此处断言的候选序列。
+    snapshot.progression.age = 55;
     snapshot.records.lifeNodes.romanceSuccessCount = 1;
     snapshot.records.selectedEventIds.push('relationship-marriage');
 
@@ -60,10 +61,11 @@ describe('dealTurnOffer', () => {
 
   it('skips events that are already visible in the current active turn', () => {
     const snapshot = createBaseSnapshot();
-    snapshot.progression.age = 40;
+    // 55 岁时恋爱/婚姻/组建家庭都已超龄，不会干扰此处断言的候选序列。
+    snapshot.progression.age = 55;
     snapshot.records.lifeNodes.romanceSuccessCount = 1;
     snapshot.turnState.activeTurn = {
-      age: 40,
+      age: 55,
       cycle: 5,
       turn: 1,
       patternKind: 'balanced',

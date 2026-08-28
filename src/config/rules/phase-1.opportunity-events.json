@@ -186,7 +186,7 @@
       "name": "恋爱关系",
       "category": "relationship",
       "availability": {
-        "age": { "min": 20, "maxExclusive": 35 },
+        "age": { "min": 20, "maxExclusive": 50 },
         "maxOccurrences": null,
         "requiresLifeNodes": []
       },
@@ -218,6 +218,7 @@
       "name": "婚姻选择",
       "category": "relationship",
       "availability": {
+        "age": { "maxExclusive": 50 },
         "maxOccurrences": 1,
         "requiresLifeNodes": [
           { "key": "romanceSuccessCount", "min": 1 }
@@ -250,6 +251,7 @@
       "name": "组建家庭",
       "category": "relationship",
       "availability": {
+        "age": { "maxExclusive": 50 },
         "maxOccurrences": 1,
         "requiresLifeNodes": [
           { "key": "marriageEstablished", "equals": true }
@@ -341,6 +343,7 @@
       "name": "陪伴父母",
       "category": "relationship",
       "availability": {
+        "age": { "maxExclusive": 70 },
         "maxOccurrences": null,
         "requiresLifeNodes": []
       },
