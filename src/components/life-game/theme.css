@@ -759,47 +759,105 @@ body {
   margin: 0;
 }
 
-/* 双骰容器：两颗骰子并排滚动 */
+/* 双骰容器：两颗骰子并排滚动，间距拉开避免翻滚时视觉上挤在一起 */
 .life-game__dice {
   display: flex;
-  gap: var(--space-lg);
+  gap: var(--space-2xl);
 }
 
-/* 六面骰：金色线框 + 柔和发光，翻转带轻微弹跳，像真正被掷出 */
+/* 3D 骰子场景：透视距离决定立体感的强弱，外层投影保持原有金色光晕 */
 .life-game__die {
+  --die-half: 2.25rem; /* 骰子边长 4.5rem 的一半，立方体面的位移距离 */
   width: 4.5rem;
   height: 4.5rem;
   color: var(--gold-primary);
+  perspective: 28rem;
   filter: drop-shadow(0 0 12px rgba(217, 168, 78, 0.35));
-  animation: die-tumble 0.9s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
 }
 
-/* 第二颗骰：反向、错拍滚动，两颗骰子节奏不同更真实 */
-.life-game__die--second {
-  animation-delay: 0.14s;
+/* 立方体本体：保留 3D 变换上下文，绕对角轴无缝循环翻滚 */
+.life-game__die-cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: die-tumble-3d 2.8s cubic-bezier(0.42, 0.08, 0.58, 0.92) infinite;
+}
+
+/* 立方体的面：金色线框 + 微弱金色底光渐隐入黑，延续黑金线框质感；
+   底面近不透明，避免转动时背面的点数透过来造成视觉混乱 */
+.life-game__die-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 18%;
+  border: 2px solid currentColor;
+  border-radius: 18%;
+  background: linear-gradient(160deg, rgba(217, 168, 78, 0.14), rgba(10, 12, 16, 0.92) 55%);
+  box-shadow: inset 0 0 10px rgba(217, 168, 78, 0.18);
+}
+
+/* 六个面的空间朝向：从中心向六个方向各推出半个边长 */
+.life-game__die-face--front {
+  transform: translateZ(var(--die-half));
+}
+.life-game__die-face--back {
+  transform: rotateY(180deg) translateZ(var(--die-half));
+}
+.life-game__die-face--right {
+  transform: rotateY(90deg) translateZ(var(--die-half));
+}
+.life-game__die-face--left {
+  transform: rotateY(-90deg) translateZ(var(--die-half));
+}
+.life-game__die-face--top {
+  transform: rotateX(90deg) translateZ(var(--die-half));
+}
+.life-game__die-face--bottom {
+  transform: rotateX(-90deg) translateZ(var(--die-half));
+}
+
+/* 点数：实心金点 + 柔和外发光，与原 SVG 骰点一致 */
+.life-game__die-pip {
+  align-self: center;
+  justify-self: center;
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px rgba(217, 168, 78, 0.6);
+}
+
+/* 空格占位：撑住 3x3 网格但不可见 */
+.life-game__die-pip--empty {
+  visibility: hidden;
+}
+
+/* 第二颗骰：反向、错拍且周期略长，两颗骰子节奏逐渐错开更真实；
+   负延迟使其在覆盖层出现时就已进入翻滚中段，避免开场静帧 */
+.life-game__die--second .life-game__die-cube {
+  animation-duration: 3.4s;
   animation-direction: reverse;
+  animation-delay: -1.1s;
 }
 
-@keyframes die-tumble {
+/* 立体翻滚：X/Y 轴各旋转整周、起止姿态一致，Z 轴微倾回归，循环无跳帧 */
+@keyframes die-tumble-3d {
   0% {
-    transform: rotate(0deg) translateY(0);
-  }
-  25% {
-    transform: rotate(90deg) translateY(-10px);
+    transform: rotateX(-20deg) rotateY(-30deg) rotateZ(0deg);
   }
   50% {
-    transform: rotate(180deg) translateY(0);
-  }
-  75% {
-    transform: rotate(270deg) translateY(-6px);
+    transform: rotateX(-200deg) rotateY(-210deg) rotateZ(10deg);
   }
   100% {
-    transform: rotate(360deg) translateY(0);
+    transform: rotateX(-380deg) rotateY(-390deg) rotateZ(0deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .life-game__die {
+  .life-game__die-cube {
     animation: none;
   }
 }
