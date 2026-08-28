@@ -18,6 +18,7 @@ export function buildCardNarrativePrompt(
       turn: String(facts.turn),
       stageLabel: facts.stageLabel,
       category: formatCategory(facts.category),
+      coreMemory: facts.coreMemory,
       eventSkeleton: JSON.stringify(facts.eventSkeleton),
       // 有范围提示时追加一行；无则留空，不占位。
       eventHint: hint ? `事件范围提示：${hint}\n` : ''
@@ -39,7 +40,8 @@ export function buildResultNarrativePrompt(
       cardDescription: facts.cardDescription,
       gradeLabel: formatGrade(facts.resultGrade),
       appliedDeltas: JSON.stringify(facts.appliedDeltas),
-      historySummary: facts.historySummary
+      historySummary: facts.historySummary,
+      coreMemory: facts.coreMemory
     })
   };
 }
@@ -54,6 +56,7 @@ export function buildFateNarrativePrompt(
     user: renderTemplate(config.fatePrompt.userTemplate, {
       playerProfile: formatPlayerProfile(facts.player),
       age: String(facts.age),
+      coreMemory: facts.coreMemory,
       eventName: facts.eventName,
       appliedDeltas: stringifyOrNone(facts.appliedDeltas),
       mitigatedDelta: stringifyOrNone(facts.mitigatedDelta)
@@ -71,6 +74,7 @@ export function buildStatusNarrativePrompt(
     user: renderTemplate(config.statusPrompt.userTemplate, {
       playerProfile: formatPlayerProfile(facts.player),
       age: String(facts.age),
+      coreMemory: facts.coreMemory,
       statusName: facts.statusName,
       statusKind: formatStatusKind(facts.kind),
       conditions: stringifyOrNone(facts.conditions),
@@ -147,21 +151,37 @@ export function formatCategory(category: OpportunityCategory): string {
 }
 
 // 把玩家背景压成一行可读文本，空字段用「未填写」占位。
+// 玩家可以只填一部分背景；出现缺失时附一句「合理推测」指令，
+// 让 AI 把缺失项当作已根据其他信息推测出的真实背景来写，而不是回避或点破。
 function formatPlayerProfile(profile: CreatePlayerInput['profile']): string {
+  const missing: string[] = [];
+
+  function field(label: string, value: string): string {
+    if (value) return `${label}：${value}`;
+    missing.push(label);
+    return `${label}：未填写`;
+  }
+
+  function listField(label: string, values: string[]): string {
+    if (values.length > 0) return `${label}：${values.join('、')}`;
+    missing.push(label);
+    return `${label}：未填写`;
+  }
+
   const parts = [
-    `昵称：${profile.nickname || '未填写'}`,
-    `学历：${profile.education || '未填写'}`,
-    `行业：${profile.industry || '未填写'}`
+    field('昵称', profile.nickname),
+    field('学历', profile.education),
+    field('行业', profile.industry),
+    listField('技能', profile.skillTags),
+    listField('愿望', profile.wishes)
   ];
 
-  if (profile.skillTags.length > 0) {
-    parts.push(`技能：${profile.skillTags.join('、')}`);
-  }
-  if (profile.wishes.length > 0) {
-    parts.push(`愿望：${profile.wishes.join('、')}`);
+  let text = parts.join('；');
+  if (missing.length > 0) {
+    text += `（${missing.join('、')}未填写，请根据已提供的其他背景信息合理推测补全，并在写作中当作玩家的真实背景使用，绝不要指出或暗示这些信息缺失）`;
   }
 
-  return parts.join('；');
+  return text;
 }
 
 // 根据文本风格开关追加一句风格约束。

@@ -57,7 +57,8 @@ export function buildCreatePlayerViewModel(
       wishes: labels.wishes,
       wishesPlaceholder: labels.wishesPlaceholder,
       wishesAction: labels.wishesAction,
-      abilitiesTitle: labels.abilitiesTitle
+      abilitiesTitle: labels.abilitiesTitle,
+      optionalFieldsHint: labels.optionalFieldsHint
     },
     draft,
     appId,

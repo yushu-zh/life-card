@@ -35,6 +35,7 @@ export interface Phase4PresentationConfig {
       abilitiesTitle: string;
       remainingPointsTemplate: string;
       startAction: string;
+      optionalFieldsHint: string;
     };
     turnOverview: {
       title: string;
@@ -231,6 +232,7 @@ export interface CreatePlayerFieldLabels {
   wishesPlaceholder: string;
   wishesAction: string;
   abilitiesTitle: string;
+  optionalFieldsHint: string;
 }
 
 export interface CreatePlayerFieldErrors {

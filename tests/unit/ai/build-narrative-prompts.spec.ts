@@ -19,6 +19,7 @@ const cardFacts: CardNarrativeFacts = {
   cycle: 2,
   turn: 1,
   stageLabel: '20-34岁',
+  coreMemory: '人生现状：已婚\n你人生中已留下的印记：22岁·开始跟师傅学木工',
   category: 'achievement',
   eventSkeleton: { id: 'achievement-job-opportunity', name: '工作机会', checkAbilityKeys: ['cognition', 'execution'] }
 };
@@ -32,6 +33,16 @@ describe('buildCardNarrativePrompt', () => {
     assert.ok(prompt.user.includes('工作机会'));
     assert.ok(prompt.user.includes('cognition')); // 骨架能力进入上下文
     assert.ok(!prompt.user.includes('{playerProfile}')); // 占位符已替换
+  });
+
+  it('injects core memory as anti-contradiction constraint', () => {
+    const prompt = buildCardNarrativePrompt(cardFacts, config);
+
+    assert.ok(prompt.user.includes('已婚')); // 核心记忆进入上下文
+    assert.ok(prompt.user.includes('开始跟师傅学木工'));
+    assert.ok(prompt.user.includes('绝不能与之矛盾'));
+    // 牌面 prompt 要教会 AI 输出可选的记忆字段。
+    assert.ok(prompt.user.includes('memory'));
   });
 
   it('instructs the model to output only a description', () => {
@@ -53,6 +64,7 @@ describe('buildResultNarrativePrompt', () => {
         { key: 'experience', amount: 1 }
       ],
       historySummary: '暂无',
+      coreMemory: '你人生中已留下的印记：22岁·开始跟师傅学木工',
       cardDescription: '一家AI公司向你发出邀请，你决定接受这份工作。'
     };
     const prompt = buildResultNarrativePrompt(facts, config);
@@ -60,6 +72,7 @@ describe('buildResultNarrativePrompt', () => {
     assert.ok(prompt.user.includes('成功'));
     assert.ok(prompt.user.includes('money'));
     assert.ok(prompt.user.includes('一家AI公司向你发出邀请')); // 事件描述进入上下文，让结果与其呼应
+    assert.ok(prompt.user.includes('开始跟师傅学木工')); // 核心记忆进入上下文防矛盾
   });
 });
 
@@ -68,6 +81,7 @@ describe('buildFateNarrativePrompt', () => {
     const facts: FateNarrativeFacts = {
       player: cardFacts.player,
       age: 30,
+      coreMemory: '暂无',
       eventName: '公司裁员',
       appliedDeltas: [{ key: 'money', amount: -2 }],
       mitigatedDelta: null
@@ -85,6 +99,7 @@ describe('buildStatusNarrativePrompt', () => {
     const facts: StatusNarrativeFacts = {
       player: cardFacts.player,
       age: 40,
+      coreMemory: '暂无',
       statusName: '经济危机',
       kind: 'one-time-effect',
       conditions: [{ key: 'money', operator: '<=', threshold: 0, actual: 0 }],
@@ -103,6 +118,7 @@ describe('buildStatusNarrativePrompt', () => {
     const facts: StatusNarrativeFacts = {
       player: cardFacts.player,
       age: 50,
+      coreMemory: '暂无',
       statusName: '健康危机',
       kind: 'death-risk',
       conditions: [{ key: 'health', operator: '<=', threshold: -1, actual: -2 }],

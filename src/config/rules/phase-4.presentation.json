@@ -22,7 +22,8 @@
       "wishesAction": "添加",
       "abilitiesTitle": "初始能力分配",
       "remainingPointsTemplate": "剩余点数：{remaining} / {total}",
-      "startAction": "开始人生"
+      "startAction": "开始人生",
+      "optionalFieldsHint": "没填写的部分 AI 会根据你已填写的内容合理推测。"
     },
     "turnOverview": {
       "title": "第 {age} 岁的选择",

@@ -6,11 +6,22 @@ interface CreatePlayerScreenProps {
   onChange: (draft: CreatePlayerInput) => void;
   onAppIdChange: (value: string) => void;
   onDeepSeekApiKeyChange: (value: string) => void;
-  onStart: () => void;
+  // draftOverride：点击开始时若技能/愿望输入框里还有未点「添加」的文字，
+  // 组件会把它们合并进草稿后一并传出，避免依赖 setState 的异步时序。
+  onStart: (draftOverride?: CreatePlayerInput) => void;
 }
 
 // 创建人物界面：单列布局，App ID / DeepSeek API Key / 昵称 / 技能 / 学历 / 行业 / 愿望 + 能力分配面板 + 全宽开始按钮。
 // 视觉对齐 docs/ui/reference/创建人物界面.png。
+// 安卓输入法/浏览器的防御性属性：部分 Android 键盘（自动纠错、联想输入）
+// 在与受控 input 交互时会偶发内容截断，关闭这些行为并禁用自动填充可规避。
+const ANDROID_SAFE_INPUT_PROPS = {
+  autoComplete: 'off',
+  autoCorrect: 'off',
+  autoCapitalize: 'off',
+  spellCheck: false
+} as const;
+
 export function CreatePlayerScreen({
   vm,
   onChange,
@@ -47,6 +58,38 @@ export function CreatePlayerScreen({
     updateProfile({ [field]: next });
   }
 
+  // 开始游戏前兜底：把标签输入框里还没点「添加」的文字也合并进草稿。
+  // 玩家很容易忘点添加，这里默默收下，不额外弹提示；超出上限或与已有标签重复时忽略。
+  function flushPendingTag(field: 'skillTags' | 'wishes', draftProfile: CreatePlayerInput['profile']) {
+    const input = document.getElementById(`new-${field}`) as HTMLInputElement | null;
+    const value = input?.value.trim() ?? '';
+    if (!value) return draftProfile;
+
+    const limit = field === 'skillTags' ? vm.limits.skillTagLimit : vm.limits.wishLimit;
+    const current = draftProfile[field];
+    if (current.includes(value) || current.length >= limit) return draftProfile;
+
+    if (input) input.value = '';
+    return { ...draftProfile, [field]: [...current, value] };
+  }
+
+  function handleStart() {
+    let profile = flushPendingTag('skillTags', vm.draft.profile);
+    profile = flushPendingTag('wishes', profile);
+
+    // 没有待添加的标签时按原路径走，避免多余的状态更新。
+    if (profile === vm.draft.profile) {
+      onStart();
+      return;
+    }
+
+    // 同步父层草稿保持界面一致；同时把合并后的草稿直接传给 onStart，
+    // 防止父层 handleStart 读到的还是 setState 之前的旧草稿。
+    const nextDraft: CreatePlayerInput = { ...vm.draft, profile };
+    onChange(nextDraft);
+    onStart(nextDraft);
+  }
+
   function updateAbility(key: AbilityKey, delta: number) {
     const nextValue = vm.draft.abilities[key] + delta;
     onChange({
@@ -70,6 +113,7 @@ export function CreatePlayerScreen({
         <input
           id="nickname"
           className="life-game__input"
+          {...ANDROID_SAFE_INPUT_PROPS}
           placeholder={vm.labels.nicknamePlaceholder}
           value={profile.nickname}
           onChange={(e) => updateProfile({ nickname: e.target.value })}
@@ -84,6 +128,7 @@ export function CreatePlayerScreen({
         <input
           id="app-id"
           className="life-game__input"
+          {...ANDROID_SAFE_INPUT_PROPS}
           placeholder={vm.labels.appIdPlaceholder}
           value={vm.appId}
           onChange={(e) => onAppIdChange(e.target.value)}
@@ -98,6 +143,7 @@ export function CreatePlayerScreen({
         <input
           id="deepseek-api-key"
           className="life-game__input"
+          {...ANDROID_SAFE_INPUT_PROPS}
           placeholder={vm.labels.deepseekApiKeyPlaceholder}
           value={vm.deepseekApiKey}
           onChange={(e) => onDeepSeekApiKeyChange(e.target.value)}
@@ -105,6 +151,11 @@ export function CreatePlayerScreen({
         {vm.errors.aiCredential && (
           <div className="life-game__form-error">{vm.errors.aiCredential}</div>
         )}
+      </div>
+
+      {/* 选填说明：技能/学历/行业/愿望都可留空，AI 会根据已填内容推测 */}
+      <div className="life-game__form-hint" style={{ marginBottom: 'var(--space-sm)' }}>
+        {vm.labels.optionalFieldsHint}
       </div>
 
       <TagField
@@ -125,6 +176,7 @@ export function CreatePlayerScreen({
         <input
           id="education"
           className="life-game__input"
+          {...ANDROID_SAFE_INPUT_PROPS}
           placeholder={vm.labels.educationPlaceholder}
           value={profile.education}
           onChange={(e) => updateProfile({ education: e.target.value })}
@@ -138,6 +190,7 @@ export function CreatePlayerScreen({
         <input
           id="industry"
           className="life-game__input"
+          {...ANDROID_SAFE_INPUT_PROPS}
           placeholder={vm.labels.industryPlaceholder}
           value={profile.industry}
           onChange={(e) => updateProfile({ industry: e.target.value })}
@@ -204,7 +257,7 @@ export function CreatePlayerScreen({
       <button
         className="life-game__primary-button life-game__cta"
         disabled={!vm.canStart}
-        onClick={onStart}
+        onClick={handleStart}
       >
         {vm.startActionLabel}
       </button>
@@ -243,6 +296,7 @@ function TagField({
         <input
           id={`new-${field}`}
           className="life-game__input"
+          {...ANDROID_SAFE_INPUT_PROPS}
           placeholder={placeholder}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {

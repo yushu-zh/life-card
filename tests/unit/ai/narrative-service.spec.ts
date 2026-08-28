@@ -21,6 +21,7 @@ const cardFacts: CardNarrativeFacts = {
   cycle: 1,
   turn: 1,
   stageLabel: '20-34岁',
+  coreMemory: '暂无',
   category: 'self',
   eventSkeleton: { id: 'self-fitness', name: '健身锻炼', checkAbilityKeys: ['execution'] }
 };
@@ -32,12 +33,14 @@ const resultFacts: ResultNarrativeFacts = {
   resultGrade: 'success',
   appliedDeltas: [{ key: 'health', amount: 2 }],
   historySummary: '暂无',
+  coreMemory: '暂无',
   cardDescription: '你决定开始健身。'
 };
 
 const fateFacts: FateNarrativeFacts = {
   player: cardFacts.player,
   age: 30,
+  coreMemory: '暂无',
   eventName: '公司裁员',
   appliedDeltas: [{ key: 'money', amount: -2 }],
   mitigatedDelta: null
@@ -46,6 +49,7 @@ const fateFacts: FateNarrativeFacts = {
 const statusFacts: StatusNarrativeFacts = {
   player: cardFacts.player,
   age: 40,
+  coreMemory: '暂无',
   statusName: '经济危机',
   kind: 'one-time-effect',
   conditions: [{ key: 'money', operator: '<=', threshold: 0, actual: 0 }],

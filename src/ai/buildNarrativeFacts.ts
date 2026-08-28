@@ -19,6 +19,7 @@ export function buildCardNarrativeFacts(
     cycle: snapshot.progression.cycle,
     turn: snapshot.progression.turn,
     stageLabel: resolveStageLabel(snapshot.progression.age, turnSystemConfig),
+    coreMemory: buildCoreMemory(snapshot),
     category: eventDefinition.category,
     eventSkeleton: {
       id: eventDefinition.id,
@@ -47,6 +48,7 @@ export function buildResultNarrativeFacts(
     resultGrade,
     appliedDeltas,
     historySummary: buildHistorySummary(snapshot),
+    coreMemory: buildCoreMemory(snapshot),
     cardDescription
   };
 }
@@ -59,6 +61,7 @@ export function buildFateNarrativeFacts(
   return {
     player: snapshot.player,
     age: snapshot.progression.age,
+    coreMemory: buildCoreMemory(snapshot),
     eventName: fateSummary.event?.name ?? '',
     appliedDeltas: fateSummary.appliedDeltas,
     mitigatedDelta: fateSummary.mitigatedDelta
@@ -73,6 +76,7 @@ export function buildStatusNarrativeFacts(
   return {
     player: snapshot.player,
     age: snapshot.progression.age,
+    coreMemory: buildCoreMemory(snapshot),
     statusName: statusResult.name,
     kind: statusResult.kind,
     conditions: statusResult.conditions,
@@ -90,20 +94,53 @@ export function buildHistorySummary(snapshot: GameSessionSnapshot, limit = 5): s
     (entry) => `${entry.context.age}岁选择「${entry.opportunity.event.name}」→${formatGrade(entry.opportunity.resultGrade)}`
   );
 
-  const lifeNodes = snapshot.records.lifeNodes;
-  const nodeParts: string[] = [];
-  if (lifeNodes.romanceSuccessCount > 0) {
-    nodeParts.push(`恋爱${lifeNodes.romanceSuccessCount}次`);
-  }
-  if (lifeNodes.marriageEstablished) {
-    nodeParts.push('已婚');
-  }
-  if (lifeNodes.familyEstablished) {
-    nodeParts.push('已组建家庭');
-  }
-
+  const nodeParts = buildLifeNodeParts(snapshot.records.lifeNodes);
   const summary = parts.length > 0 ? parts.join('；') : '暂无';
   return nodeParts.length > 0 ? `${summary}（${nodeParts.join('、')}）` : summary;
+}
+
+// 汇总本局已发生、不可被后续叙述推翻的核心记忆，注入各类叙事 prompt 防 AI 瞎编矛盾。
+// 由两部分拼成，都是「设定」而非「故事」：
+// 1. 结构化人生节点（已婚、恋爱次数等，代码可证为真）；
+// 2. 被选中牌面落盘的 AI 记忆条目（只保留最近若干条，控制 token 体积）。
+export function buildCoreMemory(snapshot: GameSessionSnapshot, limit = 8): string {
+  const lines: string[] = [];
+
+  const nodeParts = buildLifeNodeParts(snapshot.records.lifeNodes);
+  if (nodeParts.length > 0) {
+    lines.push(`人生现状：${nodeParts.join('、')}`);
+  }
+
+  // 从历史条目里收集被选中牌面的记忆；弃牌的文案从未落盘，不会被误记。
+  // 旧存档没有 memory 字段，访问到 undefined 时自然跳过。
+  const memories: string[] = [];
+  for (const entry of snapshot.records.lifeHistory) {
+    const memory = entry.narrative?.card?.memory;
+    if (typeof memory === 'string' && memory.length > 0) {
+      memories.push(`${entry.context.age}岁·${memory}`);
+    }
+  }
+  if (memories.length > 0) {
+    lines.push(`你人生中已留下的印记：${memories.slice(-limit).join('；')}`);
+  }
+
+  return lines.length > 0 ? lines.join('\n') : '暂无';
+}
+
+// 把人生节点压成短句数组；没有已成立的节点时为空数组。
+function buildLifeNodeParts(lifeNodes: GameSessionSnapshot['records']['lifeNodes']): string[] {
+  const parts: string[] = [];
+  if (lifeNodes.romanceSuccessCount > 0) {
+    parts.push(`恋爱${lifeNodes.romanceSuccessCount}次`);
+  }
+  if (lifeNodes.marriageEstablished) {
+    parts.push('已婚');
+  }
+  if (lifeNodes.familyEstablished) {
+    parts.push('已组建家庭');
+  }
+
+  return parts;
 }
 
 // 从年龄阶段规则推导一个可读阶段标签，如「20-34岁」。
@@ -237,17 +274,7 @@ function buildReadableFinalStats(
 
 // 把人生节点压成一句可读描述；空节点给一个兜底文案。
 function buildReadableLifeNodes(lifeNodes: GameSessionSnapshot['records']['lifeNodes']): string {
-  const parts: string[] = [];
-  if (lifeNodes.romanceSuccessCount > 0) {
-    parts.push(`恋爱${lifeNodes.romanceSuccessCount}次`);
-  }
-  if (lifeNodes.marriageEstablished) {
-    parts.push('已婚');
-  }
-  if (lifeNodes.familyEstablished) {
-    parts.push('已组建家庭');
-  }
-
+  const parts = buildLifeNodeParts(lifeNodes);
   return parts.length > 0 ? parts.join('、') : '暂无关键人生节点';
 }
 

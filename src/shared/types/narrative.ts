@@ -3,8 +3,12 @@ import type { OpportunityCategory, OpportunityResultGrade, StatDelta } from './o
 import type { StatusConditionSnapshot } from './status.ts';
 
 // 事件牌文案：AI 只输出一段事件描述（背景 + 你选择怎么做），其余字段一律白名单剥离。
+// memory 是本局核心记忆条目：仅当这次选择会给人生留下持久设定（新身份、长期关系、
+// 持续投入的事业）时由 AI 顺带产出一句设定短句；没有则缺省。只有被选中的牌的 memory
+// 会随历史条目落盘，弃牌的记忆直接丢弃。
 export interface EventCardNarrative {
   description: string;
+  memory?: string;
 }
 
 // 机会事件结果文案：AI 只输出一段结果描述，与所选事件描述呼应。
@@ -38,6 +42,8 @@ export interface CardNarrativeFacts {
   cycle: number;
   turn: number;
   stageLabel: string;
+  // 本局核心记忆：已发生、不可被后续叙述推翻的事实（防 AI 瞎编矛盾）。
+  coreMemory: string;
   category: OpportunityCategory;
   eventSkeleton: {
     id: string;
@@ -58,6 +64,8 @@ export interface ResultNarrativeFacts {
   resultGrade: OpportunityResultGrade | 'direct';
   appliedDeltas: StatDelta[];
   historySummary: string;
+  // 本局核心记忆：已发生、不可被后续叙述推翻的事实（防 AI 瞎编矛盾）。
+  coreMemory: string;
   // 所选事件牌的描述，用于让结果文案与其呼应。
   cardDescription: string;
 }
@@ -66,6 +74,8 @@ export interface ResultNarrativeFacts {
 export interface FateNarrativeFacts {
   player: CreatePlayerInput['profile'];
   age: number;
+  // 本局核心记忆：已发生、不可被后续叙述推翻的事实（防 AI 瞎编矛盾）。
+  coreMemory: string;
   eventName: string;
   appliedDeltas: StatDelta[];
   mitigatedDelta: StatDelta | null;
@@ -75,6 +85,8 @@ export interface FateNarrativeFacts {
 export interface StatusNarrativeFacts {
   player: CreatePlayerInput['profile'];
   age: number;
+  // 本局核心记忆：已发生、不可被后续叙述推翻的事实（防 AI 瞎编矛盾）。
+  coreMemory: string;
   statusName: string;
   kind: 'one-time-effect' | 'death-risk' | 'per-cycle-effect';
   conditions: StatusConditionSnapshot[];

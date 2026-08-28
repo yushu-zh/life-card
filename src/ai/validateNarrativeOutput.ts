@@ -1,7 +1,8 @@
 import type { EventCardNarrative, FateEventNarrative, LifeReportNarrative, OpportunityResultNarrative, StatusEventNarrative } from '../shared/types/narrative.ts';
 
 // 解析并校验 AI 返回的事件牌文案。
-// 只读取白名单字段（一段描述），其余字段一律忽略；缺失、空或非法都返回 null，交由上层走 fallback。
+// 只读取白名单字段（一段描述 + 可选的一条持久设定记忆），其余字段一律忽略；
+// 缺失、空或非法都返回 null，交由上层走 fallback。
 export function parseEventCardNarrative(raw: string): EventCardNarrative | null {
   const value = parseObject(raw);
   if (!value) {
@@ -13,7 +14,20 @@ export function parseEventCardNarrative(raw: string): EventCardNarrative | null 
     return null;
   }
 
-  return { description };
+  // memory 是可选项：AI 认为这张牌不会留下持久设定时会返回 null 或省略。
+  // 截断到 30 字防 AI 写长，控制后续 prompt 的体积。
+  const memory = readOptionalMemory(value.memory);
+
+  return memory ? { description, memory } : { description };
+}
+
+// 读取可选的记忆短句：非字符串、空白串视为「无记忆」；超长截断。
+function readOptionalMemory(value: unknown): string | null {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null;
+  }
+
+  return value.trim().slice(0, 30);
 }
 
 // 解析并校验 AI 返回的结果文案。只读取白名单字段（一段描述），非法则返回 null。

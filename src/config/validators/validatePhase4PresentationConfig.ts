@@ -39,7 +39,8 @@ const REQUIRED_CREATE_PLAYER_FIELDS = [
   'wishesAction',
   'abilitiesTitle',
   'remainingPointsTemplate',
-  'startAction'
+  'startAction',
+  'optionalFieldsHint'
 ] as const;
 
 // 回合总览需要的标签字段。

@@ -197,7 +197,10 @@ export function GameShell() {
   }, []);
 
   // 开始人生：校验、创建新游戏并立即发牌。
-  const handleStart = useCallback(async () => {
+  // draftOverride 用于创建界面把未点「添加」的标签文字合并后传入；
+  // 若直接用 uiState.draft，会因 React 状态更新异步而丢掉这次合并。
+  const handleStart = useCallback(async (draftOverride?: CreatePlayerInput) => {
+    const draft = draftOverride ?? uiState.draft;
     // 清空上一次失败遗留的错误提示。
     setStartError(null);
     setUiState((prev) => ({ ...prev, pending: 'creating' }));
@@ -206,7 +209,7 @@ export function GameShell() {
       await saveFridayAppId(appId);
       await saveDeepSeekApiKey(deepseekApiKey);
 
-      const snapshot = await createNewGame(uiState.draft);
+      const snapshot = await createNewGame(draft);
       await saveCurrentSessionPointer({ sessionId: snapshot.meta.sessionId });
 
       // 新快照没有 activeTurn，需要先调用发牌接口才能进入回合总览。
